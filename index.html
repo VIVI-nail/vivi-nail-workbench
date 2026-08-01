@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIVI美甲工作台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg-page:#f5f1ea;--bg-card:#fff;--bg-sidebar:#f8f5ef;
+--text-main:#2a2a2a;--text-sub:#8a8a8a;--text-light:#b5b0a8;
+--accent:#2a2a2a;--accent-red:#e85a4f;--line:#ebe6dd;
+--tag-rose:#d4a89a;--tag-rose-light:#f0d9d0;
+--tag-blue:#a8b5c4;--tag-blue-light:#d4dce6;
+--tag-green:#9bb3a0;--tag-green-light:#d4e0d6;
+--tag-yellow:#c9b58a;--tag-yellow-light:#ebe0c8;
+--sidebar-w:260px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:var(--bg-page);color:var(--text-main);min-height:100vh;display:flex;overflow-x:hidden}
+.icon{width:16px;height:16px;display:inline-block;vertical-align:middle;fill:currentColor;flex-shrink:0}
+.icon-lg{width:20px;height:20px}.icon-sm{width:13px;height:13px}
+.sidebar{width:var(--sidebar-w);background:var(--bg-sidebar);height:100vh;position:fixed;left:0;top:0;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.sidebar-header{display:flex;align-items:center;padding:24px 24px 20px;border-bottom:1px solid var(--line);gap:0}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:38px;height:38px;background:var(--tag-rose);color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0}
+.brand-text{line-height:1.3}
+.brand-name{font-size:18px;font-weight:600;letter-spacing:.5px}
+.brand-sub{font-size:10px;color:var(--text-sub);letter-spacing:2px}
+.back-home{display:flex;align-items:center;gap:8px;padding:12px 16px;margin:18px 14px;background:#fff;border-radius:12px;font-size:13px;color:var(--text-main);border:1px solid var(--line);cursor:pointer;transition:all .2s}
+.back-home:hover{background:#f0ebe2}
+.menu{flex:1;overflow-y:auto;padding:0 10px 20px}
+.menu::-webkit-scrollbar{width:4px}.menu::-webkit-scrollbar-thumb{background:#d8d2c6;border-radius:4px}
+.menu-section{font-size:11px;color:var(--text-sub);padding:16px 12px 8px;letter-spacing:1px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:2px 0;border-radius:10px;font-size:13px;color:var(--text-main);cursor:pointer;transition:all .2s}
+.menu-item:hover{background:rgba(0,0,0,.03)}
+.menu-item.active{background:#2a2a2a;color:#fff}
+.menu-item.active .icon,.menu-item.active .menu-icon{color:#fff}
+.menu-icon{color:var(--text-sub);display:inline-flex}
+.sidebar-footer{padding:14px 20px;font-size:11px;color:var(--text-light);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.sync-status{display:flex;align-items:center;gap:6px;font-size:11px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--tag-green)}
+.sync-dot.offline{background:var(--tag-yellow)}
+.login-btn{padding:8px 12px;background:var(--tag-rose);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;width:100%}
+.menu-toggle{display:none;position:fixed;top:16px;left:16px;z-index:200;width:44px;height:44px;background:#fff;border:1px solid var(--line);border-radius:10px;align-items:center;justify-content:center;cursor:pointer;font-size:18px}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;padding:24px 32px 100px;position:relative;max-width:calc(100vw - var(--sidebar-w));transition:margin-left .3s,max-width .3s}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title-wrap{display:flex;align-items:center;gap:12px;flex:1}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:10px;font-size:13px;cursor:pointer;color:var(--text-main);transition:all .2s}
+.back-btn:hover{background:#f0ebe2}
+.page-title{font-size:22px;font-weight:600;letter-spacing:.5px}
+.page-date{font-size:13px;color:var(--text-sub)}
+.card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid var(--line)}
+.card-title{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.card-title-sub{font-size:12px;color:var(--text-sub);font-weight:400}
+.quick-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.quick-card{background:#fff;border-radius:16px;padding:22px 20px;border:1px solid var(--line);cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;gap:16px}
+.quick-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.04)}
+.quick-card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.qc-rose{background:var(--tag-rose)}.qc-yellow{background:var(--tag-yellow)}.qc-green{background:var(--tag-green)}.qc-blue{background:var(--tag-blue)}
+.quick-card-content{flex:1}.quick-card-title{font-size:15px;font-weight:600;margin-bottom:4px}.quick-card-desc{font-size:11px;color:var(--text-sub);line-height:1.5}
+.tab-bar{display:flex;gap:8px;margin:20px 0 16px;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;background:#fff;border:1px solid var(--line);border-radius:20px;font-size:13px;color:var(--text-main);cursor:pointer;transition:all .2s}
+.tab-btn.active{background:#2a2a2a;color:#fff;border-color:#2a2a2a}
+.data-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.data-card{background:#fff;border-radius:16px;padding:20px;border:1px solid var(--line);position:relative;overflow:hidden}
+.data-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.dc-rose::before{background:var(--tag-rose)}.dc-yellow::before{background:var(--tag-yellow)}.dc-green::before{background:var(--tag-green)}.dc-blue::before{background:var(--tag-blue)}
+.data-card-label{font-size:12px;color:var(--text-sub);margin-bottom:10px}
+.data-card-value{font-size:28px;font-weight:600;margin-bottom:8px;letter-spacing:-.5px}
+.data-card-sub{font-size:11px;color:var(--text-sub)}
+.analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.analysis-item{background:#faf7f1;border-radius:12px;padding:18px;border:1px solid var(--line)}
+.analysis-label{font-size:12px;color:var(--text-sub);margin-bottom:10px}
+.analysis-value{font-size:24px;font-weight:600;margin-bottom:6px}
+.analysis-sub{font-size:11px;color:var(--text-sub)}
+.section-toolbar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.search-input{flex:1;min-width:180px;padding:10px 16px;background:#fff;border:1px solid var(--line);border-radius:10px;font-size:13px;outline:0;font-family:inherit}
+.search-input:focus{border-color:var(--text-main)}
+.btn{padding:10px 20px;border-radius:10px;font-size:13px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--text-main);font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.btn:hover{background:#f0ebe2}
+.btn-dark{background:#2a2a2a;color:#fff;border-color:#2a2a2a}
+.btn-dark:hover{background:#1a1a1a}
+.btn-red{background:var(--accent-red);color:#fff;border-color:var(--accent-red)}
+.btn-red:hover{background:#d44a3f}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-ghost{background:0 0;border:1px solid var(--line);color:var(--text-sub)}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{text-align:left;padding:14px 12px;background:#faf7f1;font-weight:500;color:var(--text-sub);font-size:12px}
+.table th:first-child{border-radius:10px 0 0 10px}.table th:last-child{border-radius:0 10px 10px 0}
+.table td{padding:14px 12px;border-top:1px solid var(--line)}
+.table tr:hover td{background:#faf7f1}
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;background:#f0ebe2;color:var(--text-main)}
+.tag-pending{background:#fdf3d8;color:#b58a3a}.tag-done{background:#d8ebde;color:#5a8a6e}.tag-confirm{background:#d4dce6;color:#4a6a8a}.tag-rose{background:var(--tag-rose-light);color:#a06655}
+.customer-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.customer-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;transition:all .2s}
+.customer-card:hover{box-shadow:0 6px 16px rgba(0,0,0,.05);transform:translateY(-2px)}
+.customer-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--tag-rose-light),var(--tag-blue-light));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:600;flex-shrink:0}
+.customer-name{font-size:15px;font-weight:600}.customer-phone{font-size:11px;color:var(--text-sub);margin-top:2px}
+.customer-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}
+.info-row{display:flex;flex-direction:column;gap:2px}.info-label{color:var(--text-sub);font-size:11px}.info-value{color:var(--text-main)}
+.discount-badge{display:inline-block;padding:2px 8px;background:var(--tag-rose-light);color:#a06655;border-radius:8px;font-size:10px;font-weight:600;margin-top:4px}
+.staff-list{display:flex;flex-direction:column;gap:10px}
+.staff-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#faf7f1;border-radius:10px;flex-wrap:wrap}
+.staff-dot{width:10px;height:10px;border-radius:50%;background:var(--tag-rose);flex-shrink:0}
+.staff-name{font-size:14px;font-weight:500;flex:1}.staff-role{font-size:12px;color:var(--text-sub)}.staff-actions{display:flex;gap:6px}
+.member-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.summary-card{background:#faf7f1;border-radius:12px;padding:18px;border:1px solid var(--line)}
+.summary-label{font-size:12px;color:var(--text-sub);margin-bottom:8px}.summary-value{font-size:24px;font-weight:600}.summary-sub{font-size:11px;color:var(--text-sub);margin-top:4px}
+.member-list{display:flex;flex-direction:column;gap:12px}
+.member-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.member-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.member-info{display:flex;align-items:center;gap:12px}.member-name{font-size:15px;font-weight:600}.member-phone{font-size:12px;color:var(--text-sub)}.member-balance{font-size:13px;color:var(--tag-rose);font-weight:600}
+.member-cards{display:flex;gap:10px;flex-wrap:wrap}
+.card-chip{background:#faf7f1;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:12px}.card-chip-name{color:var(--text-main);font-weight:500}.card-chip-info{color:var(--text-sub);font-size:11px;margin-top:2px}
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-head{text-align:center;font-size:12px;color:var(--text-sub);padding:8px 0;font-weight:500}
+.cal-cell{min-height:90px;background:#faf7f1;border:1px solid var(--line);border-radius:8px;padding:6px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:4px}
+.cal-cell:hover{background:#f0ebe2}.cal-cell.other-month{opacity:.4}.cal-cell.today{border-color:var(--tag-rose);background:#fdf6f3}
+.cal-date{font-weight:600;font-size:13px}
+.cal-apt{background:var(--tag-rose-light);color:#a06655;padding:2px 6px;border-radius:4px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.discount-info{background:#faf7f1;border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px}
+.discount-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.discount-row.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;font-weight:600;font-size:15px}
+.discount-row .val{color:var(--tag-rose);font-weight:600}
+.chart-container{background:#faf7f1;border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid var(--line)}
+.chart-bars{display:flex;align-items:flex-end;gap:12px;height:200px;margin-top:16px}
+.chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.chart-bar-fill{width:100%;background:linear-gradient(180deg,var(--tag-rose-light),var(--tag-rose));border-radius:6px 6px 0 0;min-height:4px}
+.chart-bar-label{font-size:11px;color:var(--text-sub)}.chart-bar-value{font-size:11px;color:var(--text-main);font-weight:500}
+.ranking-list{display:flex;flex-direction:column;gap:10px}
+.ranking-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#faf7f1;border-radius:10px}
+.rank-num{width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-sub)}
+.rank-num.top{background:var(--tag-rose);color:#fff}
+.rank-content{flex:1;min-width:0}.rank-name{font-size:14px;font-weight:500}
+.rank-bar-wrap{height:4px;background:#fff;border-radius:2px;margin-top:6px;overflow:hidden}
+.rank-bar{height:100%;background:var(--tag-rose);border-radius:2px}
+.rank-value{font-size:14px;font-weight:600;color:var(--text-main);white-space:nowrap}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:12px;color:var(--text-sub)}
+.form-input,.form-select,.form-textarea{padding:10px 14px;background:#faf7f1;border:1px solid var(--line);border-radius:10px;font-size:13px;outline:0;font-family:inherit;color:var(--text-main)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--text-main);background:#fff}
+.form-textarea{resize:vertical;min-height:80px}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:8px;background:#faf7f1;border:none;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center}
+.modal-body{padding:24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.fab{position:fixed;right:32px;bottom:32px;width:56px;height:56px;border-radius:50%;background:var(--accent-red);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 24px rgba(232,90,79,.3);z-index:50;border:none;transition:transform .2s}
+.fab:hover{transform:scale(1.05)}
+.fab-menu{position:fixed;right:32px;bottom:100px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.1);padding:8px;display:none;flex-direction:column;gap:4px;z-index:50;min-width:160px;border:1px solid var(--line)}
+.fab-menu.show{display:flex}
+.fab-menu-item{padding:10px 14px;border-radius:8px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text-main)}
+.fab-menu-item:hover{background:#faf7f1}.fab-menu-item .icon{color:var(--tag-rose)}
+.empty{text-align:center;padding:40px 20px;color:var(--text-sub);background:#faf7f1;border-radius:12px;font-size:13px}
+.service-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.service-chip{padding:10px 12px;background:#faf7f1;border:1px solid var(--line);border-radius:10px;font-size:12px;cursor:pointer;transition:all .2s;text-align:center;line-height:1.4}
+.service-chip:hover{background:#f0ebe2;border-color:var(--tag-rose)}
+.service-chip.selected{background:var(--tag-rose-light);border-color:var(--tag-rose);color:#a06655;font-weight:600}
+.service-chip .chip-price{display:block;font-size:10px;color:var(--tag-rose);margin-top:2px;font-weight:500}
+.filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:flex-end}
+.filter-bar .form-group{margin-bottom:0}
+.filter-bar .form-input,.filter-bar .form-select{padding:8px 12px;font-size:12px;min-width:0;flex-shrink:0}
+.filter-date{max-width:140px}
+.filter-keyword{max-width:180px}
+.filter-type{max-width:130px}
+.strike{text-decoration:line-through;color:var(--text-sub)}
+.income-text{color:var(--tag-green)}.expense-text{color:var(--accent-red)}
+.row{display:flex;gap:10px;align-items:center}.row-between{display:flex;justify-content:space-between;align-items:center}
+.text-sub{color:var(--text-sub)}.text-sm{font-size:12px}.hidden{display:none}.scroll-x{overflow-x:auto}
+
+/* 响应式 */
+@media(max-width:1024px){
+.quick-cards{grid-template-columns:repeat(2,1fr)}.data-cards{grid-template-columns:repeat(2,1fr)}
+.analysis-grid{grid-template-columns:repeat(2,1fr)}.member-summary{grid-template-columns:1fr}.cal-cell{min-height:80px}
+}
+@media(min-width:769px) and (max-width:1024px){
+.sidebar{width:240px}.main{margin-left:240px;max-width:calc(100vw - 240px);padding:20px 24px 100px}
+.quick-cards{grid-template-columns:repeat(2,1fr);gap:12px}
+.customer-list{grid-template-columns:repeat(2,1fr)}.modal{max-width:580px}
+.form-input,.form-select{padding:12px 16px;font-size:14px}.btn{padding:12px 22px;font-size:14px}
+.fab{width:60px;height:60px;right:28px;bottom:28px}.fab-menu{right:28px;bottom:100px}
+}
+@media(min-width:1025px) and (max-width:1366px){
+.main{padding:28px 40px 100px}.quick-cards{gap:16px}.customer-list{grid-template-columns:repeat(3,1fr)}.modal{max-width:640px}
+}
+/* 手机端：侧边栏展开时主区域右移 */
+@media(max-width:768px){
+.menu-toggle{display:flex}
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.sidebar.open ~ .main{margin-left:var(--sidebar-w);max-width:calc(100vw - var(--sidebar-w))}
+.main{margin-left:0;max-width:100vw;padding:70px 16px 100px;transition:margin-left .3s,max-width .3s}
+.quick-cards{grid-template-columns:1fr 1fr;gap:10px}.data-cards{grid-template-columns:1fr 1fr;gap:10px}
+.analysis-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}
+.page-title{font-size:18px}.quick-card{padding:16px 14px}.quick-card-title{font-size:14px}.quick-card-desc{display:none}
+.cal-grid{gap:3px}.cal-cell{min-height:60px;padding:4px;font-size:10px}.cal-date{font-size:11px}.cal-apt{font-size:9px}
+.fab{right:16px;bottom:16px;width:52px;height:52px}.fab-menu{right:16px;bottom:80px}
+.service-picker{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+.filter-bar{flex-direction:column}.filter-bar .form-input,.filter-bar .form-select{max-width:100%}
+.staff-item{flex-direction:column;align-items:flex-start}.staff-actions{width:100%;justify-content:flex-end}
+}
+@media(max-width:480px){
+.quick-cards{grid-template-columns:1fr}.data-cards{grid-template-columns:1fr}
+.page-header{flex-direction:column;align-items:flex-start}.cal-cell{min-height:50px}
+}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+<symbol id="i-circle-plus" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path fill="currentColor" d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></symbol>
+<symbol id="i-user-plus" viewBox="0 0 24 24"><path fill="currentColor" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-2 2c-3.31 0-10 1.67-10 5v3h12v-3c0-1.43.85-2.74 2.13-3.62C15.5 14.53 14.16 14 13 14zm7-3v3h3v2h-3v3h-2v-3h-3v-2h3v-3h2z"/></symbol>
+<symbol id="i-card" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></symbol>
+<symbol id="i-video" viewBox="0 0 24 24"><path fill="currentColor" d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6l9-4 9 4v12l-9 4-9-4V6zm9 1.7L6.5 10 12 12.3 17.5 10 12 7.7zM5 11.5v7l6 2.7v-7L5 11.5zm14 0l-6 2.7v7l6-2.7v-7z"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path fill="currentColor" d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></symbol>
+<symbol id="i-angle-left" viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></symbol>
+<symbol id="i-angle-right" viewBox="0 0 24 24"><path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+<symbol id="i-bars" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94a7.13 7.13 0 00.06-.94c0-.32-.02-.63-.06-.94l2.02-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.93 6.93 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.02 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.02 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.61 3.61 0 0112 15.6z"/></symbol>
+</svg>
+
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<div class="brand">
+<div class="brand-logo">V</div>
+<div class="brand-text"><div class="brand-name">VIVI</div><div class="brand-sub">NAIL · LASH STUDIO</div></div>
+</div>
+</div>
+<div class="back-home" onclick="goHome()">
+<svg class="icon menu-icon" style="width:14px;height:14px"><use href="#i-home"/></svg>
+<span>返回工作台首页</span>
+</div>
+<nav class="menu">
+<div class="menu-section">概览</div>
+<div class="menu-item active" data-page="home" onclick="navigateTo('home')">
+<svg class="icon menu-icon"><use href="#i-grip"/></svg><span>工作台首页</span>
+</div>
+<div class="menu-section">客源 · 预约</div>
+<div class="menu-item" data-page="appointment" onclick="navigateTo('appointment')">
+<svg class="icon menu-icon"><use href="#i-calendar"/></svg><span>预约管理</span>
+</div>
+<div class="menu-item" data-page="appointment-new" onclick="navigateTo('appointment-new')">
+<svg class="icon menu-icon"><use href="#i-circle-plus"/></svg><span>新建预约</span>
+</div>
+<div class="menu-item" data-page="customer" onclick="navigateTo('customer')">
+<svg class="icon menu-icon"><use href="#i-users"/></svg><span>顾客档案</span>
+</div>
+<div class="menu-item" data-page="customer-new" onclick="navigateTo('customer-new')">
+<svg class="icon menu-icon"><use href="#i-user-plus"/></svg><span>新增会员</span>
+</div>
+<div class="menu-section">运营</div>
+<div class="menu-item" data-page="staff" onclick="navigateTo('staff')">
+<svg class="icon menu-icon"><use href="#i-users"/></svg><span>员工管理</span>
+</div>
+<div class="menu-item" data-page="member" onclick="navigateTo('member')">
+<svg class="icon menu-icon"><use href="#i-card"/></svg><span>会员扣卡</span>
+</div>
+<div class="menu-section">营销 · 数据</div>
+<div class="menu-item" data-page="live" onclick="navigateTo('live')">
+<svg class="icon menu-icon"><use href="#i-video"/></svg><span>直播选题</span>
+</div>
+<div class="menu-item" data-page="product" onclick="navigateTo('product')">
+<svg class="icon menu-icon"><use href="#i-box"/></svg><span>产品统计</span>
+</div>
+<div class="menu-item" data-page="analytics" onclick="navigateTo('analytics')">
+<svg class="icon menu-icon"><use href="#i-chart"/></svg><span>数据分析</span>
+</div>
+</nav>
+<div class="sidebar-footer">
+<div class="sync-status" id="syncStatus"><span class="sync-dot" id="syncDot"></span><span id="syncText">本地已保存</span></div>
+<button class="login-btn" id="loginBtn" onclick="openLogin()">登录云账号</button>
+<button class="login-btn" style="margin-top:4px;background:#3ecf8e;color:#fff" onclick="window._directSupa=1;openSupaConfig()">⚡ 云端同步设置</button>
+</div>
+</aside>
+
+<button class="menu-toggle" onclick="toggleSidebar()">
+<svg class="icon"><use href="#i-bars"/></svg>
+</button>
+
+<main class="main" id="mainArea"><div id="page-container"></div></main>
+
+<div id="supaPanel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;padding:20px;z-index:9999;width:90%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+<div style="font-weight:700;font-size:16px;margin-bottom:12px">Supabase 云端配置</div>
+<div style="font-size:13px;color:#888;margin-bottom:12px;line-height:1.6">配置完成即可跨设备实时同步数据</div>
+<div style="margin-bottom:10px"><label style="font-size:12px;color:#666;display:block;margin-bottom:4px">Project URL</label><input id="supa_url2" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" value="https://iyqglwdmeeggqslcnaaxy.supabase.co"></div>
+<div style="margin-bottom:14px"><label style="font-size:12px;color:#666;display:block;margin-bottom:4px">anon key</label><input id="supa_key2" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5cWdsd2RtZWVncXNsY25hYXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MDYwOTUsImV4cCI6MjEwMTA4MjA5NX0.DY1rUcaFzNAVbbj_LFCvvHu10VvnLYS6HO0cmZssjEY"></div>
+<button onclick="var u=document.getElementById('supa_url2').value.trim();var k=document.getElementById('supa_key2').value.trim();if(u&&k){supaConfig={url:u,anonKey:k};try{localStorage.setItem('vivi_supa_config',JSON.stringify(supaConfig))}catch(e){}document.getElementById('supaPanel').style.display='none';updateSyncStatus();alert('Supabase 已连接！')}" style="width:100%;padding:10px;background:#222;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600">保存并连接</button>
+<div id="supaMsg" style="margin-top:8px;font-size:12px;text-align:center;color:#3ecf8e"></div>
+</div>
+<script>document.getElementById('supaPanel').style.display='block';</script>
+<button class="fab" onclick="toggleFab()"><svg class="icon icon-lg"><use href="#i-plus"/></svg></button>
+<div class="fab-menu" id="fabMenu">
+<div class="fab-menu-item" onclick="openModal('appointment')"><svg class="icon"><use href="#i-calendar"/></svg><span>新建预约</span></div>
+<div class="fab-menu-item" onclick="openModal('customer')"><svg class="icon"><use href="#i-user-plus"/></svg><span>新增会员</span></div>
+<div class="fab-menu-item" onclick="navigateTo('member')"><svg class="icon"><use href="#i-card"/></svg><span>会员扣卡</span></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+<div class="modal-header"><div class="modal-title" id="modalTitle">标题</div><button class="modal-close" onclick="closeModal()"><svg class="icon icon-sm"><use href="#i-close"/></svg></button></div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-footer" id="modalFooter"></div>
+</div>
+</div>
+
+<script>
+/* ========== 服务项目预设 ========== */
+const DEFAULT_SERVICES=[
+{name:'法式美甲',price:280},{name:'猫眼美甲',price:320},{name:'渐变美甲',price:260},
+{name:'腮红甲',price:240},{name:'纯色美甲',price:180},{name:'手绘美甲',price:380},
+{name:'Y型睫毛嫁接',price:350},{name:'单根睫毛嫁接',price:280},{name:'浓密款睫毛',price:420},
+{name:'美甲美睫套餐',price:580},{name:'新娘套装',price:880},{name:'足部美甲',price:200}
+];
+const SERVICE_STORAGE_KEY='vivi_service_presets';
+
+function loadServices(){
+try{
+const s=localStorage.getItem(SERVICE_STORAGE_KEY);
+if(s){const arr=JSON.parse(s);if(arr.length>0)return arr}
+return JSON.parse(JSON.stringify(DEFAULT_SERVICES))
+}catch(e){return JSON.parse(JSON.stringify(DEFAULT_SERVICES))}
+}
+function saveServices(services){
+try{localStorage.setItem(SERVICE_STORAGE_KEY,JSON.stringify(services))}catch(e){}
+}
+
+let servicePresets=loadServices();
+
+/* ========== 会员折扣 ========== */
+const MEMBER_LEVELS={
+'普通会员':{discount:1.0,label:'无折扣'},
+'银卡会员':{discount:0.88,label:'88折'},
+'金卡会员':{discount:0.85,label:'85折'},
+'钻石会员':{discount:0.80,label:'8折'},
+'高级储值':{discount:0.75,label:'75折'},
+'至尊储值':{discount:0.70,label:'7折'}
+};
+
+/* ========== 默认数据 ========== */
+const DEFAULT_DATA={
+customers:[
+{id:1,name:'林晓彤',phone:'138****8821',skin:'冷白皮',preference:'法式 / 渐变',history:'奶杏色法式 / 樱花美睫',consumption:2860,visits:8,member:'金卡会员'},
+{id:2,name:'苏婉清',phone:'139****6690',skin:'暖黄皮',preference:'猫眼 / 腮红甲',history:'玻璃珠猫眼 / Y型睫毛',consumption:4520,visits:12,member:'钻石会员'},
+{id:3,name:'陈思雨',phone:'136****1129',skin:'自然肤色',preference:'纯色 / 极简',history:'裸色简约 / 单根睫毛',consumption:1280,visits:4,member:'银卡会员'}
+],
+appointments:[
+{id:1,customer:'林晓彤',phone:'138****8821',service:'法式美甲 + 樱花美睫',staff:'佳佳',date:'2026-07-29',startTime:'14:00',endTime:'16:00',status:'confirm',price:280},
+{id:2,customer:'苏婉清',phone:'139****6690',service:'猫眼美甲 + Y型睫毛',staff:'思琪',date:'2026-07-29',startTime:'15:30',endTime:'18:00',status:'pending',price:320},
+{id:3,customer:'陈思雨',phone:'136****1129',service:'裸色美甲',staff:'佳佳',date:'2026-07-29',startTime:'16:00',endTime:'17:30',status:'confirm',price:180}
+],
+staff:[
+{id:1,name:'佳佳',role:'美甲师',phone:'138****0001'},
+{id:2,name:'思琪',role:'美甲师',phone:'139****0002'},
+{id:3,name:'小米',role:'美睫师',phone:'136****0003'}
+],
+members:[
+{id:1,name:'林晓彤',phone:'138****8821',level:'金卡会员',balance:1280,cards:[{name:'美甲次卡',total:10,used:6},{name:'美睫次卡',total:5,used:2}]},
+{id:2,name:'苏婉清',phone:'139****6690',level:'钻石会员',balance:860,cards:[{name:'钻石储值卡',total:5000,used:4140}]},
+{id:3,name:'陈思雨',phone:'136****1129',level:'银卡会员',balance:0,cards:[{name:'美甲次卡',total:5,used:3}]}
+],
+memberFlow:[
+{date:'2026-07-29 14:30',customer:'林晓彤',type:'扣次',content:'美甲次卡 ×1 · 法式美甲',originalPrice:280,discount:'85折',paid:238,balance:'剩余 4 次'},
+{date:'2026-07-29 13:20',customer:'苏婉清',type:'充值',content:'储值卡 +2000',originalPrice:2000,discount:'8折',paid:2000,balance:'余额 2860'},
+{date:'2026-07-29 10:45',customer:'陈思雨',type:'扣次',content:'美甲次卡 ×1 · 猫眼美甲',originalPrice:320,discount:'88折',paid:282,balance:'剩余 2 次'}
+],
+liveTopics:[
+{title:'夏日显白美甲TOP10',tag:'热门',heat:9856},
+{title:'新娘嫁接睫毛怎么选',tag:'推荐',heat:7620},
+{title:'猫眼美甲吸金套路',tag:'爆款',heat:6840}
+],
+products:[
+{name:'OPI经典红',category:'甲油',sales:156,stock:23},
+{name:'Y型睫毛0.07',category:'睫毛',sales:89,stock:12},
+{name:'猫眼磁铁',category:'工具',sales:67,stock:8}
+],
+finance:[
+{id:1,date:'2026-07-29',type:'income',category:'美甲服务',amount:280,customer:'林晓彤',staff:'佳佳',note:'法式美甲'},
+{id:2,date:'2026-07-29',type:'income',category:'美睫服务',amount:320,customer:'苏婉清',staff:'思琪',note:'Y型睫毛'},
+{id:3,date:'2026-07-29',type:'income',category:'美甲服务',amount:180,customer:'陈思雨',staff:'佳佳',note:'纯色美甲'},
+{id:4,date:'2026-07-30',type:'expense',category:'��工日结',amount:300,staff:'佳佳',note:'7/29 日结工资'},
+{id:5,date:'2026-07-30',type:'expense',category:'员工日结',amount:260,staff:'思琪',note:'7/29 日结工资'}
+],
+nextId:{customer:4,appointment:4,staff:4,member:4,finance:6}
+};
+
+/* ========== 数据存储 ========== */
+const STORAGE_KEY='vivi_workbench_data';
+const AUTH_KEY='vivi_auth';
+const SUPA_CONFIG_KEY='vivi_supa_config'; // Supabase 配置
+let store=null;
+let cloudChannel=null;
+let navHistory=[];
+let syncTimer=null; // 防抖：延迟上传
+
+/* ===== Supabase 配置 ===== */
+function getSupaConfig(){
+try{return JSON.parse(localStorage.getItem(SUPA_CONFIG_KEY))}catch(e){return null}
+}
+// 内置默认 Supabase 配置
+const DEFAULT_SUPA_CONFIG={
+url:'https://iyqglwdmeeggqslcnaaxy.supabase.co',
+anonKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5cWdsd2RtZWVncXNsY25hYXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MDYwOTUsImV4cCI6MjEwMTA4MjA5NX0.DY1rUcaFzNAVbbj_LFCvvHu10VvnLYS6HO0cmZssjEY'
+};
+let supaConfig=getSupaConfig()||DEFAULT_SUPA_CONFIG;
+(function(){
+if(!localStorage.getItem(SUPA_CONFIG_KEY)){
+try{localStorage.setItem(SUPA_CONFIG_KEY,JSON.stringify(DEFAULT_SUPA_CONFIG))}catch(e){}
+}
+})();
+function saveSupaConfig(cfg){try{localStorage.setItem(SUPA_CONFIG_KEY,JSON.stringify(cfg))}catch(e){};supaConfig=cfg}
+function clearSupaConfig(){try{localStorage.removeItem(SUPA_CONFIG_KEY)}catch(e){};supaConfig=null}
+
+/* Supabase REST 调用：upsert 一行数据（key=用户名） */
+async function supaUpsert(user,data){
+if(!supaConfig)return false;
+const url=`${supaConfig.url}/rest/v1/vivi_data?key=eq.${encodeURIComponent(user)}`;
+const headers={
+'apikey':supaConfig.anonKey,
+'Authorization':`Bearer ${supaConfig.anonKey}`,
+'Content-Type':'application/json',
+'Prefer':'resolution=merge-duplicates'
+};
+try{
+const r=await fetch(url,{method:'PATCH',headers,body:JSON.stringify({data})});
+return r.ok;
+}catch(e){return false}
+}
+
+/* Supabase REST 调用：读取一行数据 */
+async function supaFetch(user){
+if(!supaConfig)return null;
+const url=`${supaConfig.url}/rest/v1/vivi_data?key=eq.${encodeURIComponent(user)}&select=data`;
+const headers={'apikey':supaConfig.anonKey,'Authorization':`Bearer ${supaConfig.anonKey}`};
+try{
+const r=await fetch(url,{headers});
+if(!r.ok)return null;
+const arr=await r.json();
+if(arr&&arr.length>0&&arr[0].data)return arr[0].data;
+return null;
+}catch(e){return null}
+}
+
+/* Supabase 初始化表（首次使用引导） */
+async function supaInitTable(){
+if(!supaConfig)return false;
+const sql=`CREATE TABLE IF NOT EXISTS vivi_data ( key TEXT PRIMARY KEY, data JSONB, updated_at TIMESTAMPTZ DEFAULT now() );`;
+const url=`${supaConfig.url}/rest/v1/rpc/exec`;
+const headers={'apikey':supaConfig.anonKey,'Authorization':`Bearer ${supaConfig.anonKey}`,'Content-Type':'application/json'};
+try{
+// 不能直接用 REST 跑 DDL，跳过；改为用户自己在 SQL Editor 跑
+return true;
+}catch(e){return false}
+}
+
+/* ===== 本地数据 ===== */
+function loadData(){
+try{
+const saved=localStorage.getItem(STORAGE_KEY);
+if(saved){store=JSON.parse(saved);Object.keys(DEFAULT_DATA).forEach(k=>{if(store[k]===undefined)store[k]=DEFAULT_DATA[k]})}
+else{store=JSON.parse(JSON.stringify(DEFAULT_DATA));saveData()}
+}catch(e){store=JSON.parse(JSON.stringify(DEFAULT_DATA))}
+}
+
+/* 保存：先写本地，再防抖上传云端 */
+function saveData(){
+try{
+localStorage.setItem(STORAGE_KEY,JSON.stringify(store));
+const auth=getAuth();
+if(auth){
+// 本地缓存（同浏览器多标签页同步用）
+localStorage.setItem('vivi_cloud_'+auth.user,JSON.stringify(store));
+// 跨标签页广播
+if(cloudChannel){cloudChannel.postMessage({type:'sync',data:store,user:auth.user,ts:Date.now()})}
+// 防抖上传到 Supabase（2秒内多次只上传一次）
+if(syncTimer)clearTimeout(syncTimer);
+syncTimer=setTimeout(()=>{
+supaUpsert(auth.user,store).then(ok=>{
+if(ok)console.log('[云端]已同步');
+else console.warn('[云端]上传失败');
+});
+},2000);
+}
+updateSyncStatus()
+}catch(e){}
+}
+
+function updateSyncStatus(){
+const dot=document.getElementById('syncDot'),text=document.getElementById('syncText');
+const auth=getAuth();
+dot.classList.remove('offline');
+if(auth){
+if(supaConfig){
+text.textContent='云端已连接 · '+auth.user;
+}else{
+text.textContent='本地已同步 · '+auth.user;
+}
+}else{
+text.textContent='本地已保存';
+}
+}
+
+function getAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY))}catch(e){return null}}
+function setAuth(auth){localStorage.setItem(AUTH_KEY,JSON.stringify(auth))}
+function clearAuth(){localStorage.removeItem(AUTH_KEY)}
+function hashPwd(pwd){let h=0;for(let i=0;i<pwd.length;i++){h=((h<<5)-h)+pwd.charCodeAt(i);h|=0}return'v'+Math.abs(h).toString(16)}
+
+/* ===== 登录弹窗 ===== */
+function openLogin(){
+const auth=getAuth();
+if(auth){
+const html=`
+<div style="text-align:center;padding:10px 0">
+<div class="avatar" style="margin:0 auto 12px;width:56px;height:56px;font-size:22px">${auth.user[0].toUpperCase()}</div>
+<div style="font-size:16px;font-weight:600;margin-bottom:4px">${auth.user}</div>
+<div class="text-sm text-sub" style="margin-bottom:6px">${supaConfig?'已连接 Supabase 云端':'未连接 Supabase（仅本地同步）'}</div>
+<button class="btn btn-dark" style="width:100%;justify-content:center;margin-bottom:10px" onclick="pullCloudData()"><svg class="icon icon-sm"><use href="#i-download"/></svg> 拉取云端数据</button>
+<button class="btn btn-dark" style="width:100%;justify-content:center;margin-bottom:10px" onclick="pushCloudData()"><svg class="icon icon-sm"><use href="#i-cloud"/></svg> 上传本地到云端</button>
+<button class="btn" style="width:100%;justify-content:center;margin-bottom:10px" onclick="openSupaConfig()"><svg class="icon icon-sm"><use href="#i-settings"/></svg> Supabase 配置</button>
+<button class="btn" style="width:100%;justify-content:center;margin-bottom:10px" onclick="exportBackup()"><svg class="icon icon-sm"><use href="#i-download"/></svg> 导出数据备份</button>
+<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="logout()">退出登录</button>
+<div class="text-sm text-sub" style="margin-top:14px;line-height:1.6">
+<b>同步说明</b><br>
+${supaConfig?'· 已连接 Supabase，跨设备实时同步<br>· 修改后2秒自动上传':'· 未配置 Supabase，仅同浏览器同步<br>· 点击上方「Supabase 配置」开启跨设备'}
+</div>
+</div>`;
+openModalContent('云账号',html,'',false);return
+}
+const html=`
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">管理员账号</label><input class="form-input" id="loginUser" placeholder="输入账号" /></div>
+<div class="form-group"><label class="form-label">密码</label><input class="form-input" id="loginPwd" type="password" placeholder="输入密码" /></div>
+<div class="text-sm text-sub" style="text-align:center">首次输入将自动创建账号<br>${supaConfig?'已连接 Supabase，登录后自动拉取云端数据':'未连接 Supabase，仅本地同步（点下方配置开启跨设备）'}</div>
+${supaConfig?'':'<button class="btn btn-ghost" style="justify-content:center" onclick="openSupaConfig()"><svg class="icon icon-sm"><use href="#i-settings"/></svg> 配置 Supabase 云端</button>'}
+</div>`;
+openModalContent('登录云账号',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="doLogin()">登录 / 注册</button>`)
+}
+
+/* ===== Supabase 配置弹窗 ===== */
+function openSupaConfig(){
+const cur=supaConfig||{url:'',anonKey:''};
+const html=`
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="text-sm text-sub" style="line-height:1.7;background:#faf7f1;padding:12px;border-radius:10px">
+<b>配置步骤：</b><br>
+1. 访问 supabase.com 用邮箱注册（免费）<br>
+2. 新建项目，记下 Project URL 和 anon key<br>
+3. 在下方填入后点击「保存并自动建表」即可<br>
+4. <b>无需手动操作 SQL Editor</b>，系统会自动处理
+</div>
+<div class="form-group"><label class="form-label">Project URL</label><input class="form-input" id="supa_url" placeholder="https://xxxx.supabase.co" value="${cur.url}" /></div>
+<div class="form-group"><label class="form-label">anon key</label><input class="form-input" id="supa_key" placeholder="eyJ... 公开 anon key" value="${cur.anonKey}" /></div>
+</div>`;
+const footer=`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" id="supaSaveBtn" onclick="saveSupaConfigFromForm()">保存并自动建表</button>${supaConfig?'<button class="btn btn-ghost" onclick="clearSupaConfigFromForm()" style="margin-right:auto">清除配置</button>':''}`;
+openModalContent('Supabase 云端配置',html,footer)
+}
+async function saveSupaConfigFromForm(){
+const url=document.getElementById('supa_url').value.trim();
+const anonKey=document.getElementById('supa_key').value.trim();
+if(!url||!anonKey){alert('请填写 URL 和 anon key');return}
+// 先尝试用 REST API 检查表是否存在
+const btn=document.getElementById('supaSaveBtn');
+btn.disabled=true;btn.textContent='检测中...';
+const checkUrl=`${url.replace(/\/$/,'')}/rest/v1/vivi_data?select=key&limit=1`;
+const headers={'apikey':anonKey,'Authorization':`Bearer ${anonKey}`};
+let tableExists=false;
+try{
+const r=await fetch(checkUrl,{headers});
+tableExists=r.ok;
+}catch(e){tableExists=false}
+if(!tableExists){
+btn.textContent='尝试建表...';
+// 通过 RPC 或直接提示用户手动建表
+// Supabase REST API 不支持 DDL，用 mgmt API 建表
+const mgmtUrl=`${url.replace(/\/$/,'')}/rest/v1/rpc/`;
+// 降级：提示用户
+alert('自动建表未成功。\n\n请手动操作：\n1. 打开 Supabase 控制台\n2. 左侧菜单 → SQL Editor\n3. 粘贴下方 SQL 并 Run：\n\nCREATE TABLE vivi_data (\n  key TEXT PRIMARY KEY,\n  data JSONB,\n  updated_at TIMESTAMPTZ DEFAULT now()\n);\n\n配置已保存，建表后可正常使用。');
+}
+saveSupaConfig({url:url.replace(/\/$/,''),anonKey});
+btn.disabled=false;btn.textContent='保存并自动建表';
+closeModal();
+updateSyncStatus();
+if(tableExists){
+alert('Supabase 配置成功！\n表已存在，可直接使用。');
+}else{
+alert('Supabase 配置已保存\n表未找到，请去 Supabase 控制台 SQL Editor 建表');
+}
+setTimeout(openLogin,100);
+}
+function clearSupaConfigFromForm(){
+if(!confirm('清除 Supabase 配置后，将仅使用本地同步。确认？'))return;
+clearSupaConfig();
+closeModal();
+updateSyncStatus();
+setTimeout(openLogin,100);
+}
+
+/* ===== 拉取/上传云端数据 ===== */
+async function pullCloudData(){
+const auth=getAuth();if(!auth)return;
+// 优先从 Supabase 拉取
+if(supaConfig){
+const btn=event?.target;if(btn){btn.disabled=true;btn.innerHTML='<svg class="icon icon-sm"><use href="#i-download"/></svg> 拉取中...'}
+const cloudData=await supaFetch(auth.user);
+if(btn){btn.disabled=false;btn.innerHTML='<svg class="icon icon-sm"><use href="#i-download"/></svg> 拉取云端数据'}
+if(!cloudData){
+// Supabase 无数据，回退本地
+const localCloud=localStorage.getItem('vivi_cloud_'+auth.user);
+if(!localCloud){alert('云端暂无数据（首次使用请先「上传本地到云端」）');return}
+if(!confirm('Supabase 未拉到数据，本地缓存有数据，是否用本地缓存？'))return;
+localStorage.setItem(STORAGE_KEY,localCloud);
+loadData();refreshPage();closeModal();alert('已加载本地缓存数据');return;
+}
+if(!confirm('拉取云端数据将覆盖当前本地数据，确认？'))return;
+store=cloudData;
+localStorage.setItem(STORAGE_KEY,JSON.stringify(cloudData));
+localStorage.setItem('vivi_cloud_'+auth.user,JSON.stringify(cloudData));
+refreshPage();closeModal();alert('已从 Supabase 拉取云端数据');
+}else{
+// 无 Supabase，用本地缓存
+const cloudKey='vivi_cloud_'+auth.user;
+const cloudData=localStorage.getItem(cloudKey);
+if(!cloudData){alert('云端暂无数据');return}
+if(!confirm('拉取云端数据将覆盖当前本地数据，确认？'))return;
+localStorage.setItem(STORAGE_KEY,cloudData);
+loadData();refreshPage();closeModal();alert('已拉取云端数据')
+}
+}
+
+async function pushCloudData(){
+const auth=getAuth();if(!auth)return;
+const btn=event?.target;if(btn){btn.disabled=true;btn.innerHTML='<svg class="icon icon-sm"><use href="#i-cloud"/></svg> 上传中...'}
+if(supaConfig){
+const ok=await supaUpsert(auth.user,store);
+if(btn){btn.disabled=false;btn.innerHTML='<svg class="icon icon-sm"><use href="#i-cloud"/></svg> 上传本地到云端'}
+if(!ok){alert('上传失败，请检查 Supabase 配置和表是否创建');return}
+// 同时更新本地缓存
+localStorage.setItem('vivi_cloud_'+auth.user,JSON.stringify(store));
+if(cloudChannel){cloudChannel.postMessage({type:'sync',data:store,user:auth.user,ts:Date.now()})}
+closeModal();alert('已上传到 Supabase 云端\n其他设备登录同一账号即可同步');
+}else{
+const cloudKey='vivi_cloud_'+auth.user;
+localStorage.setItem(cloudKey,JSON.stringify(store));
+if(cloudChannel){cloudChannel.postMessage({type:'sync',data:store,user:auth.user,ts:Date.now()})}
+if(btn){btn.disabled=false;btn.innerHTML='<svg class="icon icon-sm"><use href="#i-cloud"/></svg> 上传本地到云端'}
+closeModal();alert('已上传到本地云端\n其他设备登录同一账号后点击「拉取云端数据」即可同步')
+}
+}
+
+function refreshPage(){
+const active=document.querySelector('.menu-item.active');
+if(active)navigateTo(active.dataset.page);else navigateTo('home');
+}
+
+/* ===== 登录 ===== */
+function doLogin(){
+const user=document.getElementById('loginUser').value.trim();
+const pwd=document.getElementById('loginPwd').value;
+if(!user||!pwd){alert('请输入账号和密码');return}
+const accounts=JSON.parse(localStorage.getItem('vivi_accounts')||'{}');
+const pwdHash=hashPwd(pwd);
+if(accounts[user]){if(accounts[user]!==pwdHash){alert('密码错误');return}}
+else{accounts[user]=pwdHash;localStorage.setItem('vivi_accounts',JSON.stringify(accounts))}
+setAuth({user,pwdHash,ts:Date.now()});
+closeModal();updateLoginBtn();
+
+// 如果配了 Supabase，登录后尝试拉取云端
+if(supaConfig){
+// 异步拉取，不阻塞
+supaFetch(user).then(cloudData=>{
+const localData=localStorage.getItem(STORAGE_KEY);
+if(cloudData&&cloudData!==localData){
+if(confirm(`检测到账号 [${user}] 在 Supabase 云端有数据。\n点击「确定」拉取云端数据覆盖本地\n点击「取消」保留当前本地数据并上传到云端`)){
+store=cloudData;
+localStorage.setItem(STORAGE_KEY,JSON.stringify(cloudData));
+localStorage.setItem('vivi_cloud_'+user,JSON.stringify(cloudData));
+refreshPage();
+alert('登录成功，已从云端拉取数据\n账号：'+user);
+}else{
+localStorage.setItem('vivi_cloud_'+user,localData);
+supaUpsert(user,store);
+refreshPage();
+alert('登录成功，本地数据已上传云端\n账号：'+user);
+}
+}else{
+// 云端无数据，上传本地
+localStorage.setItem('vivi_cloud_'+user,localData);
+supaUpsert(user,store);
+refreshPage();
+alert('登录成功，本地数据已上传云端\n账号：'+user);
+}
+updateSyncStatus();
+});
+}else{
+// 无 Supabase，走本地缓存逻辑
+const cloudKey='vivi_cloud_'+user;
+const cloudData=localStorage.getItem(cloudKey);
+const localData=localStorage.getItem(STORAGE_KEY);
+if(cloudData&&cloudData!==localData){
+if(confirm(`检测到账号 [${user}] 在本地云端有数据。\n点击「确定」拉取覆盖本地\n点击「取消」上传本地到云端`)){
+localStorage.setItem(STORAGE_KEY,cloudData);
+loadData();
+}else{
+localStorage.setItem(cloudKey,localData);
+}
+}else{
+localStorage.setItem(cloudKey,localData);
+}
+updateSyncStatus();
+refreshPage();
+alert('登录成功\n账号：'+user+'\n\n未配置 Supabase，仅同浏览器同步');
+}
+}
+
+function logout(){
+const auth=getAuth();
+if(auth&&!confirm('退出登录后，本地数据保留但不再上传云端。\n确认退出？'))return;
+clearAuth();closeModal();updateLoginBtn();updateSyncStatus();alert('已退出登录')
+}
+function updateLoginBtn(){
+const auth=getAuth(),btn=document.getElementById('loginBtn');
+btn.textContent=auth?'已登录 · '+auth.user:'登录云账号'
+}
+function exportBackup(){
+const backup={version:'1.0',exportTime:new Date().toISOString(),data:store};
+const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download=`VIVI备份_${new Date().toISOString().slice(0,10)}.json`;a.click();
+URL.revokeObjectURL(url);alert('备份文件已导出')
+}
+
+/* ===== 初始化：BroadcastChannel + 定时备份 + 网络监听 ===== */
+function initCloudSync(){
+try{
+cloudChannel=new BroadcastChannel('vivi_cloud_sync');
+cloudChannel.onmessage=(e)=>{
+if(e.data&&e.data.type==='sync'&&e.data.data){
+store=e.data.data;
+try{localStorage.setItem(STORAGE_KEY,JSON.stringify(store))}catch(e2){}
+if(e.data.user){try{localStorage.setItem('vivi_cloud_'+e.data.user,JSON.stringify(store))}catch(e3){}}
+refreshPage()
+}}
+}catch(e){}
+// 定时本地备份
+setInterval(()=>{
+const backups=JSON.parse(localStorage.getItem('vivi_backups')||'[]');
+backups.unshift({time:new Date().toISOString(),data:store});
+if(backups.length>20)backups.length=20;
+localStorage.setItem('vivi_backups',JSON.stringify(backups))
+},5*60*1000);
+window.addEventListener('online',()=>{document.getElementById('syncDot').classList.remove('offline');document.getElementById('syncText').textContent=getAuth()?(supaConfig?'云端已连接 · '+getAuth().user:'本地已同步 · '+getAuth().user):'本地已保存'});
+window.addEventListener('offline',()=>{document.getElementById('syncDot').classList.add('offline');document.getElementById('syncText').textContent='离线模式 · 暂存本地'})
+}
+
+/* ========== 路由（含智能返回） ========== */
+const today=new Date();
+const dateStr=`${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 星期${'日一二三四五六'[today.getDay()]}`;
+let calCurrentDate=new Date(today.getFullYear(),today.getMonth(),1);
+
+function navigateTo(page){
+if(navHistory.length===0||navHistory[navHistory.length-1]!==page)navHistory.push(page);
+document.querySelectorAll('.menu-item').forEach(el=>el.classList.remove('active'));
+const menuItem=document.querySelector(`[data-page="${page}"]`);
+if(menuItem)menuItem.classList.add('active');
+document.getElementById('page-container').innerHTML=renderPage(page);
+if(window.innerWidth<768)document.getElementById('sidebar').classList.remove('open');
+window.scrollTo(0,0)
+}
+function goBack(){
+if(navHistory.length>1){navHistory.pop();const prev=navHistory[navHistory.length-1];navigateTo(prev)}
+else{navigateTo('home')}
+}
+function goHome(){navHistory=[];navigateTo('home')}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+function toggleFab(){document.getElementById('fabMenu').classList.toggle('show')}
+document.addEventListener('click',(e)=>{if(!e.target.closest('.fab')&&!e.target.closest('.fab-menu'))document.getElementById('fabMenu').classList.remove('show')})
+
+function renderPage(page){
+const header=(title)=>`
+<div class="page-header">
+<div class="page-title-wrap">
+<button class="back-btn" onclick="goBack()"><svg class="icon icon-sm"><use href="#i-angle-left"/></svg> 返回</button>
+<div class="page-title">${title}</div>
+</div>
+<div class="page-date">${dateStr}</div>
+</div>`;
+switch(page){
+case'home':return renderHome();
+case'appointment':return header('预约管理')+renderAppointmentList();
+case'appointment-new':return header('新建预约')+renderAppointmentForm();
+case'customer':return header('顾客档案')+renderCustomerList();
+case'customer-new':return header('新增会员')+renderCustomerForm();
+case'staff':return header('员工管理')+renderStaffPage();
+case'member':return header('会员扣卡')+renderMember();
+case'live':return header('直播选题')+renderLive();
+case'product':return header('产品统计')+renderProduct();
+case'analytics':return header('数据分析')+renderAnalytics();
+default:return renderHome()
+}
+}
+
+/* ========== 首页 ========== */
+function renderHome(){
+return`
+<div class="page-header">
+<div class="page-title-wrap">
+<button class="back-btn" onclick="goBack()"><svg class="icon icon-sm"><use href="#i-angle-left"/></svg> 返回</button>
+<div class="page-title">工作台首页</div>
+</div>
+<div class="page-date">${dateStr}</div>
+</div>
+<div class="quick-cards">
+<div class="quick-card" onclick="navigateTo('customer-new')"><div class="quick-card-icon qc-rose"><svg class="icon icon-lg"><use href="#i-user-plus"/></svg></div><div class="quick-card-content"><div class="quick-card-title">新增会员</div><div class="quick-card-desc">建档 / 充值 / 记录偏好</div></div></div>
+<div class="quick-card" onclick="navigateTo('appointment-new')"><div class="quick-card-icon qc-yellow"><svg class="icon icon-lg"><use href="#i-circle-plus"/></svg></div><div class="quick-card-content"><div class="quick-card-title">新建预约</div><div class="quick-card-desc">登记到店时间 / 项目</div></div></div>
+<div class="quick-card" onclick="navigateTo('member')"><div class="quick-card-icon qc-green"><svg class="icon icon-lg"><use href="#i-card"/></svg></div><div class="quick-card-content"><div class="quick-card-title">会员扣卡</div><div class="quick-card-desc">消费扣减 / 折扣结算</div></div></div>
+<div class="quick-card" onclick="navigateTo('analytics')"><div class="quick-card-icon qc-blue"><svg class="icon icon-lg"><use href="#i-chart"/></svg></div><div class="quick-card-content"><div class="quick-card-title">数据分析</div><div class="quick-card-desc">营收 / 客源 / 业绩</div></div></div>
+</div>
+<div class="tab-bar"><button class="tab-btn active">今日数据</button><button class="tab-btn" onclick="switchTab(this)">本月数据</button><button class="tab-btn" onclick="switchTab(this)">本年数据</button></div>
+<div class="data-cards">
+<div class="data-card dc-rose"><div class="data-card-label">总收入</div><div class="data-card-value">¥${calcFinanceSummary().income}</div><div class="data-card-sub">本月累计</div></div>
+<div class="data-card dc-yellow"><div class="data-card-label">总支出</div><div class="data-card-value">¥${calcFinanceSummary().expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
+<div class="data-card dc-green"><div class="data-card-label">净营收</div><div class="data-card-value">¥${calcFinanceSummary().net}</div><div class="data-card-sub">收入 − 支出</div></div>
+<div class="data-card dc-blue"><div class="data-card-label">预约数</div><div class="data-card-value">${store.appointments.length}</div><div class="data-card-sub">待到店 ${store.appointments.filter(a=>a.status==='pending').length}</div></div>
+</div>
+<div class="card"><div class="card-title">今日工作分析<span class="card-title-sub">${today.getMonth()+1}月${today.getDate()}日 · 周${'日一二三四五六'[today.getDay()]}</span></div>
+<div class="analysis-grid">
+<div class="analysis-item"><div class="analysis-label">今日到店</div><div class="analysis-value">${store.appointments.length}</div><div class="analysis-sub">已完成 0 · 待到店 ${store.appointments.filter(a=>a.status==='pending').length}</div></div>
+<div class="analysis-item"><div class="analysis-label">完成率</div><div class="analysis-value">0%</div><div class="analysis-sub">0 / ${store.appointments.length} 单</div></div>
+<div class="analysis-item"><div class="analysis-label">客单价</div><div class="analysis-value">¥0</div><div class="analysis-sub">净营收 ¥${calcFinanceSummary().net}</div></div>
+<div class="analysis-item"><div class="analysis-label">最热时段</div><div class="analysis-value">14:00</div><div class="analysis-sub">下午高峰</div></div>
+<div class="analysis-item"><div class="analysis-label">热门项目</div><div class="analysis-value">法式美甲</div><div class="analysis-sub">预订 2 次</div></div>
+<div class="analysis-item"><div class="analysis-label">待到店</div><div class="analysis-value">${store.appointments.filter(a=>a.status==='pending').length}</div><div class="analysis-sub">待处理</div></div>
+</div></div>`
+}
+function switchTab(el){el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+
+function calcFinanceSummary(){
+const fin=store.finance||[];
+const income=fin.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+const expense=fin.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+return{income,expense,net:income-expense}
+}
+
+/* ========== 预约管理 ========== */
+function renderAppointmentList(){
+return`
+<div class="tab-bar" style="margin-top:0">
+<button class="tab-btn active" onclick="switchAptView(this,'list')">列表视图</button>
+<button class="tab-btn" onclick="switchAptView(this,'cal')">日历视图</button>
+</div>
+<div id="aptViewArea">${renderAptListView()}</div>`
+}
+function switchAptView(el,view){el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.getElementById('aptViewArea').innerHTML=view==='list'?renderAptListView():renderAptCalendarView()}
+function renderAptListView(){
+return`
+<div class="section-toolbar">
+<input class="search-input" placeholder="搜索顾客姓名 / 手机号" oninput="filterApt(this.value)" />
+<select class="form-select" style="max-width:140px" onchange="filterAptStatus(this.value)"><option value="">全部状态</option><option value="pending">待确认</option><option value="confirm">已确认</option><option value="done">已完成</option></select>
+<button class="btn btn-dark" onclick="navigateTo('appointment-new')"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新建预约</button>
+</div>
+<div class="card" style="padding:0;overflow:hidden"><div class="scroll-x"><table class="table">
+<thead><tr><th>顾客</th><th>联系电话</th><th>服务项目</th><th>技师</th><th>日期</th><th>时间段</th><th>时长</th><th>状态</th><th>操作</th></tr></thead>
+<tbody id="aptTbody">${store.appointments.map(a=>renderAptRow(a)).join('')}</tbody>
+</table></div></div>`
+}
+function renderAptRow(a){
+const duration=calcDuration(a.startTime,a.endTime);
+return`<tr data-name="${a.customer}" data-phone="${a.phone}" data-status="${a.status}">
+<td>${a.customer}</td><td>${a.phone}</td><td>${a.service}</td><td>${a.staff}</td><td>${a.date}</td>
+<td>${a.startTime} - ${a.endTime}</td><td>${duration}</td>
+<td><span class="tag ${a.status==='confirm'?'tag-confirm':a.status==='done'?'tag-done':'tag-pending'}">${a.status==='confirm'?'已确认':a.status==='done'?'已完成':'待确认'}</span></td>
+<td><button class="btn btn-sm" onclick="editAppointment(${a.id})">编辑</button> <button class="btn btn-sm btn-ghost" onclick="completeAppointment(${a.id})">完成</button> <button class="btn btn-sm btn-ghost" onclick="deleteAppointment(${a.id})">删除</button></td>
+</tr>`
+}
+function calcDuration(start,end){const[sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);const mins=(eh*60+em)-(sh*60+sm);if(mins<=0)return'-';const h=Math.floor(mins/60),m=mins%60;return(h>0?h+'小时':'')+(m>0?m+'分':'')}
+function filterApt(q){q=q.toLowerCase();document.querySelectorAll('#aptTbody tr').forEach(tr=>{tr.style.display=(tr.dataset.name.toLowerCase().includes(q)||tr.dataset.phone.includes(q))?'':'none'})}
+function filterAptStatus(status){document.querySelectorAll('#aptTbody tr').forEach(tr=>{tr.style.display=(!status||tr.dataset.status===status)?'':'none'})}
+
+function renderAptCalendarView(){
+const year=calCurrentDate.getFullYear(),month=calCurrentDate.getMonth();
+const firstDay=new Date(year,month,1),lastDay=new Date(year,month+1,0);
+const startWeekday=firstDay.getDay()===0?6:firstDay.getDay()-1;
+const daysInMonth=lastDay.getDate(),prevMonthDays=new Date(year,month,0).getDate();
+const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+let cells='';
+['周一','周二','周三','周四','周五','周六','周日'].forEach(w=>cells+=`<div class="cal-head">${w}</div>`);
+for(let i=startWeekday-1;i>=0;i--)cells+=`<div class="cal-cell other-month"><div class="cal-date">${prevMonthDays-i}</div></div>`;
+for(let d=1;d<=daysInMonth;d++){
+const dateStr2=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const dayApts=store.appointments.filter(a=>a.date===dateStr2);
+const isToday=dateStr2===todayStr;
+cells+=`<div class="cal-cell ${isToday?'today':''}" onclick="showDayApt('${dateStr2}')"><div class="cal-date">${d}</div>${dayApts.slice(0,3).map(a=>`<div class="cal-apt">${a.startTime} ${a.customer}</div>`).join('')}${dayApts.length>3?`<div class="cal-apt" style="text-align:center">+${dayApts.length-3}</div>`:''}</div>`
+}
+const totalCells=startWeekday+daysInMonth,remain=(7-totalCells%7)%7;
+for(let i=1;i<=remain;i++)cells+=`<div class="cal-cell other-month"><div class="cal-date">${i}</div></div>`;
+return`<div class="cal-toolbar">
+<button class="btn" onclick="changeCalMonth(-1)"><svg class="icon icon-sm"><use href="#i-angle-left"/></svg></button>
+<div style="font-size:16px;font-weight:600;min-width:140px;text-align:center">${year}年${month+1}月</div>
+<button class="btn" onclick="changeCalMonth(1)"><svg class="icon icon-sm"><use href="#i-angle-right"/></svg></button>
+<div style="flex:1"></div><button class="btn btn-sm" onclick="calGoToday()">今天</button>
+<button class="btn btn-dark btn-sm" onclick="navigateTo('appointment-new')"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新建</button></div>
+<div class="card" style="padding:14px"><div class="cal-grid">${cells}</div></div>
+<div class="text-sm text-sub" style="margin-top:8px">点击日期查看当日全部预约</div>`
+}
+function changeCalMonth(delta){calCurrentDate=new Date(calCurrentDate.getFullYear(),calCurrentDate.getMonth()+delta,1);document.getElementById('aptViewArea').innerHTML=renderAptCalendarView()}
+function calGoToday(){calCurrentDate=new Date(today.getFullYear(),today.getMonth(),1);document.getElementById('aptViewArea').innerHTML=renderAptCalendarView()}
+function showDayApt(date){
+const dayApts=store.appointments.filter(a=>a.date===date);
+const html=dayApts.length?`<div style="display:flex;flex-direction:column;gap:10px"><div class="text-sm text-sub">${date} 共 ${dayApts.length} 条预约</div>${dayApts.map(a=>`<div style="background:#faf7f1;padding:12px;border-radius:10px"><div style="font-weight:600;margin-bottom:4px">${a.startTime}-${a.endTime} · ${a.customer}</div><div class="text-sm text-sub">${a.service} · 技师：${a.staff}</div><span class="tag ${a.status==='confirm'?'tag-confirm':'tag-pending'}" style="margin-top:6px">${a.status==='confirm'?'已确认':'待确认'}</span></div>`).join('')}</div>`:`<div class="empty">该日期暂无预约</div>`;
+openModalContent(date+' 预约汇总',html,`<button class="btn btn-dark" onclick="closeModal();navigateTo('appointment-new')">新建预约</button>`)
+}
+
+/* ========== 新建预约（含服务项目选择器） ========== */
+function renderAppointmentForm(){
+const todayDate=today.toISOString().slice(0,10);
+return`
+<div class="card"><div class="card-title">新建预约</div>
+<div class="form-grid">
+<div class="form-group full">
+<label class="form-label">服务项目 *</label>
+<div class="service-picker" id="servicePicker">${servicePresets.map(s=>`<div class="service-chip" onclick="selectService('${s.name.replace(/'/g,"\\'")}','${s.price}')">${s.name}<span class="chip-price">¥${s.price}</span></div>`).join('')}</div>
+<div class="row" style="margin-top:6px;gap:6px">
+<button class="btn btn-sm btn-ghost" onclick="manageServices()"><svg class="icon icon-sm"><use href="#i-settings"/></svg> 管理项目</button>
+</div>
+</div>
+<div class="form-group"><label class="form-label">服务项目名称 *</label><input class="form-input" id="apt_service" placeholder="点击上方或手动输入" /></div>
+<div class="form-group"><label class="form-label">预设单价（元）</label><input class="form-input" id="apt_price" type="number" value="" placeholder="自动填入" /></div>
+<div class="form-group"><label class="form-label">顾客姓名 *</label><input class="form-input" id="apt_name" placeholder="请输入顾客姓名" list="custList" /><datalist id="custList">${store.customers.map(c=>`<option value="${c.name}">`).join('')}</datalist></div>
+<div class="form-group"><label class="form-label">联系电话 *</label><input class="form-input" id="apt_phone" placeholder="请输入手机号" /></div>
+<div class="form-group"><label class="form-label">美甲美睫师 *</label><select class="form-select" id="apt_staff">${store.staff.map(s=>`<option>${s.name} (${s.role})</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">到店日期 *</label><input class="form-input" id="apt_date" type="date" value="${todayDate}" /></div>
+<div class="form-group"><label class="form-label">服务开始时间 *</label><input class="form-input" id="apt_start" type="time" value="10:00" /></div>
+<div class="form-group"><label class="form-label">服务结束时间 *</label><input class="form-input" id="apt_end" type="time" value="12:00" /></div>
+<div class="form-group"><label class="form-label">状态</label><select class="form-select" id="apt_status"><option value="pending">待确认</option><option value="confirm">已确认</option></select></div>
+<div class="form-group full"><label class="form-label">备注</label><textarea class="form-textarea" id="apt_note" placeholder="顾客偏好、特殊要求等"></textarea></div>
+</div>
+<div id="aptDurationHint" class="text-sm text-sub" style="margin-top:10px"></div>
+<div class="row" style="justify-content:flex-end;margin-top:20px;gap:10px">
+<button class="btn btn-ghost" onclick="navigateTo('appointment')">取消</button>
+<button class="btn btn-dark" onclick="saveAppointment()">保存预约</button>
+</div></div>`
+}
+
+function selectService(name,price){
+document.getElementById('apt_service').value=name;
+document.getElementById('apt_price').value=price||'';
+document.querySelectorAll('.service-chip').forEach(c=>c.classList.remove('selected'));
+event.target.closest('.service-chip')?.classList.add('selected')
+}
+function manageServices(){
+const html=`
+<div style="display:flex;flex-direction:column;gap:10px">
+<div class="row-between"><div class="text-sm font-weight:600">预设服务项目</div><button class="btn btn-sm btn-dark" onclick="addServiceRow()"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新增</button></div>
+<div id="serviceEditList">${servicePresets.map((s,i)=>`
+<div class="row" style="gap:8px;margin-bottom:6px">
+<input class="form-input" style="flex:1" value="${s.name}" id="svc_name_${i}" placeholder="项目名称" />
+<input class="form-input" style="width:80px" value="${s.price}" id="svc_price_${i}" type="number" placeholder="价格" />
+<button class="btn btn-sm btn-ghost" onclick="deleteServiceRow(${i})">×</button>
+</div>`).join('')}</div>
+</div>`;
+openModalContent('管理服务项目',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="saveServicesEdit()">保存</button>`)
+}
+function addServiceRow(){
+const i=servicePresets.length;
+servicePresets.push({name:'新项目',price:0});
+const list=document.getElementById('serviceEditList');
+if(list)list.innerHTML+=`<div class="row" style="gap:8px;margin-bottom:6px"><input class="form-input" style="flex:1" value="新项目" id="svc_name_${i}" placeholder="项目名称" /><input class="form-input" style="width:80px" value="0" id="svc_price_${i}" type="number" placeholder="价格" /><button class="btn btn-sm btn-ghost" onclick="deleteServiceRow(${i})">×</button></div>`
+}
+function deleteServiceRow(i){servicePresets.splice(i,1);manageServices()}
+function saveServicesEdit(){
+const newSvcs=[];
+for(let i=0;;i++){const nameEl=document.getElementById('svc_name_'+i);if(!nameEl)break;const priceEl=document.getElementById('svc_price_'+i);const name=nameEl.value.trim();if(name)newSvcs.push({name,price:parseInt(priceEl?.value)||0})}
+servicePresets=newSvcs;saveServices(servicePresets);closeModal();navigateTo('appointment-new');
+setTimeout(()=>{if(document.getElementById('servicePicker')){document.getElementById('servicePicker').innerHTML=servicePresets.map(s=>`<div class="service-chip" onclick="selectService('${s.name.replace(/'/g,"\\'")}','${s.price}')">${s.name}<span class="chip-price">¥${s.price}</span></div>`).join('')}},100)
+}
+
+function saveAppointment(){
+const name=document.getElementById('apt_name').value.trim();
+const phone=document.getElementById('apt_phone').value.trim();
+const service=document.getElementById('apt_service').value.trim();
+const staff=document.getElementById('apt_staff').value;
+const date=document.getElementById('apt_date').value;
+const startTime=document.getElementById('apt_start').value;
+const endTime=document.getElementById('apt_end').value;
+const status=document.getElementById('apt_status').value;
+const price=parseInt(document.getElementById('apt_price').value)||0;
+if(!name||!phone||!date||!service){alert('请填写必填项');return}
+if(startTime>=endTime){alert('结束时间需晚于开始时间');return}
+store.appointments.push({id:store.nextId.appointment++,customer:name,phone,service,staff:staff.split(' ')[0],date,startTime,endTime,status,price});
+saveData();alert('预约创建成功');navigateTo('appointment')
+}
+function editAppointment(id){
+const a=store.appointments.find(x=>x.id===id);if(!a)return;
+const html=`<div class="form-grid">
+<div class="form-group"><label class="form-label">顾客姓名</label><input class="form-input" id="edit_name" value="${a.customer}" /></div>
+<div class="form-group"><label class="form-label">联系电话</label><input class="form-input" id="edit_phone" value="${a.phone}" /></div>
+<div class="form-group full"><label class="form-label">服务项目</label><input class="form-input" id="edit_service" value="${a.service}" /></div>
+<div class="form-group"><label class="form-label">技师</label><select class="form-select" id="edit_staff">${store.staff.map(s=>`<option ${s.name===a.staff?'selected':''}>${s.name}</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">日期</label><input class="form-input" id="edit_date" type="date" value="${a.date}" /></div>
+<div class="form-group"><label class="form-label">开始时间</label><input class="form-input" id="edit_start" type="time" value="${a.startTime}" /></div>
+<div class="form-group"><label class="form-label">结束时间</label><input class="form-input" id="edit_end" type="time" value="${a.endTime}" /></div>
+<div class="form-group"><label class="form-label">状态</label><select class="form-select" id="edit_status"><option value="pending" ${a.status==='pending'?'selected':''}>待确认</option><option value="confirm" ${a.status==='confirm'?'selected':''}>已确认</option><option value="done" ${a.status==='done'?'selected':''}>已完成</option></select></div>
+</div>`;
+openModalContent('编辑预约',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmEditApt(${id})">保存</button>`)
+}
+function confirmEditApt(id){
+const a=store.appointments.find(x=>x.id===id);
+a.customer=document.getElementById('edit_name').value.trim();a.phone=document.getElementById('edit_phone').value.trim();
+a.service=document.getElementById('edit_service').value;a.staff=document.getElementById('edit_staff').value;
+a.date=document.getElementById('edit_date').value;a.startTime=document.getElementById('edit_start').value;
+a.endTime=document.getElementById('edit_end').value;a.status=document.getElementById('edit_status').value;
+saveData();closeModal();navigateTo('appointment');alert('已保存')
+}
+function completeAppointment(id){const a=store.appointments.find(x=>x.id===id);if(a){a.status='done';saveData();navigateTo('appointment');alert('已标记完成')}}
+function deleteAppointment(id){if(!confirm('确认删除该预约？'))return;store.appointments=store.appointments.filter(x=>x.id!==id);saveData();navigateTo('appointment')}
+
+/* ========== 顾客档案 ========== */
+function renderCustomerList(){
+return`<div class="section-toolbar"><input class="search-input" placeholder="搜索顾客姓名 / 手机号" id="searchCustomer" oninput="filterCustomers()" /><button class="btn btn-dark" onclick="navigateTo('customer-new')"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新增会员</button></div>
+<div class="customer-list" id="customerList">${store.customers.map(c=>renderCustomerCard(c)).join('')}</div>`
+}
+function renderCustomerCard(c){
+const level=MEMBER_LEVELS[c.member]||MEMBER_LEVELS['普通会员'];
+return`<div class="customer-card" data-name="${c.name}" data-phone="${c.phone}">
+<div class="customer-head"><div class="avatar">${c.name[0]}</div><div style="flex:1"><div class="customer-name">${c.name}</div><div class="customer-phone">${c.phone}</div><span class="discount-badge">${c.member} · ${level.label}</span></div></div>
+<div class="customer-info"><div class="info-row"><span class="info-label">肤色</span><span class="info-value">${c.skin}</span></div><div class="info-row"><span class="info-label">偏好</span><span class="info-value">${c.preference}</span></div><div class="info-row"><span class="info-label">历史款式</span><span class="info-value">${c.history}</span></div><div class="info-row"><span class="info-label">累计消费</span><span class="info-value">¥${c.consumption} · ${c.visits}次</span></div></div>
+<div class="row" style="gap:6px;margin-top:12px"><button class="btn btn-sm" onclick="editCustomer(${c.id})">编辑</button><button class="btn btn-sm btn-ghost" onclick="deleteCustomer(${c.id})">删除</button></div></div>`
+}
+function filterCustomers(){const q=document.getElementById('searchCustomer').value.toLowerCase();document.querySelectorAll('#customerList .customer-card').forEach(card=>{card.style.display=(card.dataset.name.toLowerCase().includes(q)||card.dataset.phone.includes(q))?'':'none'})}
+function renderCustomerForm(){
+return`<div class="card"><div class="card-title">新增会员</div><div class="form-grid">
+<div class="form-group"><label class="form-label">姓名 *</label><input class="form-input" id="cust_name" placeholder="请输入姓名" /></div>
+<div class="form-group"><label class="form-label">联系电话 *</label><input class="form-input" id="cust_phone" placeholder="请输入手机号" /></div>
+<div class="form-group"><label class="form-label">五官肤色</label><select class="form-select" id="cust_skin"><option>冷白皮</option><option>暖白皮</option><option>自然肤色</option><option>暖黄皮</option><option>小麦色</option></select></div>
+<div class="form-group"><label class="form-label">美甲偏好</label><input class="form-input" id="cust_nail_pref" placeholder="如：法式 / 渐变 / 猫眼" /></div>
+<div class="form-group"><label class="form-label">美睫偏好</label><input class="form-input" id="cust_lash_pref" placeholder="如：Y型 / 单根 / 浓密" /></div>
+<div class="form-group"><label class="form-label">会员等级</label><select class="form-select" id="cust_member">${Object.keys(MEMBER_LEVELS).map(l=>`<option>${l}</option>`).join('')}</select></div>
+<div class="form-group full"><label class="form-label">历史款式存档</label><textarea class="form-textarea" id="cust_history" placeholder="如：奶杏色法式 / 樱花美睫"></textarea></div>
+<div class="form-group full"><label class="form-label">备注</label><textarea class="form-textarea" id="cust_note" placeholder="过敏史、性格特点等"></textarea></div></div>
+<div class="row" style="justify-content:flex-end;margin-top:20px;gap:10px"><button class="btn btn-ghost" onclick="navigateTo('customer')">取消</button><button class="btn btn-dark" onclick="saveCustomer()">保存顾客</button></div></div>`
+}
+function saveCustomer(){
+const name=document.getElementById('cust_name').value.trim(),phone=document.getElementById('cust_phone').value.trim();
+if(!name||!phone){alert('请填写姓名和电话');return}
+const member=document.getElementById('cust_member').value;
+store.customers.push({id:store.nextId.customer++,name,phone,skin:document.getElementById('cust_skin').value,preference:document.getElementById('cust_nail_pref').value+' / '+document.getElementById('cust_lash_pref').value,history:document.getElementById('cust_history').value||'-',consumption:0,visits:0,member});
+store.members.push({id:store.nextId.member++,name,phone,level:member,balance:0,cards:[]});
+saveData();alert('顾客添加成功');navigateTo('customer')
+}
+function editCustomer(id){
+const c=store.customers.find(x=>x.id===id);if(!c)return;
+const html=`<div class="form-grid">
+<div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="ec_name" value="${c.name}" /></div>
+<div class="form-group"><label class="form-label">电话</label><input class="form-input" id="ec_phone" value="${c.phone}" /></div>
+<div class="form-group"><label class="form-label">肤色</label><select class="form-select" id="ec_skin">${['冷白皮','暖白皮','自然肤色','暖黄皮','小麦色'].map(s=>`<option ${s===c.skin?'selected':''}>${s}</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">偏好</label><input class="form-input" id="ec_pref" value="${c.preference}" /></div>
+<div class="form-group"><label class="form-label">历史款式</label><input class="form-input" id="ec_hist" value="${c.history}" /></div>
+<div class="form-group"><label class="form-label">会员等级</label><select class="form-select" id="ec_member">${Object.keys(MEMBER_LEVELS).map(l=>`<option ${l===c.member?'selected':''}>${l}</option>`).join('')}</select></div>
+<div class="form-group full"><label class="form-label">累计消费</label><input class="form-input" id="ec_cons" type="number" value="${c.consumption}" /></div></div>`;
+openModalContent('编辑顾客',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmEditCust(${id})">保存</button>`)
+}
+function confirmEditCust(id){
+const c=store.customers.find(x=>x.id===id);
+c.name=document.getElementById('ec_name').value.trim();c.phone=document.getElementById('ec_phone').value.trim();
+c.skin=document.getElementById('ec_skin').value;c.preference=document.getElementById('ec_pref').value;
+c.history=document.getElementById('ec_hist').value;c.member=document.getElementById('ec_member').value;
+c.consumption=parseInt(document.getElementById('ec_cons').value)||0;
+const m=store.members.find(x=>x.name===c.name);if(m)m.level=c.member;
+saveData();closeModal();navigateTo('customer')
+}
+function deleteCustomer(id){
+if(!confirm('确认删除该顾客？相关会员记录也会删除。'))return;
+const c=store.customers.find(x=>x.id===id);
+store.customers=store.customers.filter(x=>x.id!==id);
+if(c)store.members=store.members.filter(m=>m.name!==c.name);
+saveData();navigateTo('customer')
+}
+
+/* ========== 员工管理 ========== */
+function renderStaffPage(){
+return`<div class="card"><div class="card-title">员工管理<button class="btn btn-dark btn-sm" onclick="openModal('staff')"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 添加员工</button></div>
+<div class="staff-list">${store.staff.map(s=>`
+<div class="staff-item"><div class="staff-dot"></div><div class="staff-name">${s.name}</div><div class="staff-role">${s.role}</div><div class="text-sm text-sub">${s.phone||'-'}</div><div class="staff-actions"><button class="btn btn-sm" onclick="editStaff(${s.id})">编辑</button><button class="btn btn-sm btn-ghost" onclick="deleteStaff(${s.id})">删除</button></div></div>
+`).join('')}</div></div>
+<div class="card"><div class="card-title">员工说明</div><div class="text-sm text-sub" style="line-height:1.8">· 员工信息用于新建预约时分配美甲美睫师<br>· 点击「添加员工」可录入姓名、岗位、联系电话<br>· 已离职员工可删除，历史预约记录不受影响</div></div>`
+}
+function editStaff(id){
+const s=store.staff.find(x=>x.id===id);
+const html=`<div class="form-grid"><div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="es_name" value="${s.name}" /></div><div class="form-group"><label class="form-label">岗位</label><select class="form-select" id="es_role"><option ${s.role==='美甲师'?'selected':''}>美甲师</option><option ${s.role==='美睫师'?'selected':''}>美睫师</option><option ${s.role==='前台'?'selected':''}>前台</option></select></div><div class="form-group full"><label class="form-label">联系电话</label><input class="form-input" id="es_phone" value="${s.phone||''}" /></div></div>`;
+openModalContent('编辑员工',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmEditStaff(${id})">保存</button>`)
+}
+function confirmEditStaff(id){const s=store.staff.find(x=>x.id===id);s.name=document.getElementById('es_name').value.trim();s.role=document.getElementById('es_role').value;s.phone=document.getElementById('es_phone').value.trim();saveData();closeModal();navigateTo('staff')}
+function deleteStaff(id){if(!confirm('确认删除该员工？'))return;store.staff=store.staff.filter(x=>x.id!==id);saveData();navigateTo('staff')}
+
+/* ========== 会员扣卡（含检索+台账筛选+会员删除） ========== */
+function renderMember(){
+const flows=store.memberFlow.slice().sort((a,b)=>b.date.localeCompare(a.date));
+return`<div class="section-toolbar"><input class="search-input" placeholder="搜索会员姓名 / 手机号" id="searchMember" oninput="filterMembers()" /><button class="btn" onclick="exportBackup()"><svg class="icon icon-sm"><use href="#i-download"/></svg> 导出备份</button></div>
+<div class="member-summary">
+<div class="summary-card"><div class="summary-label">会员总数</div><div class="summary-value">${store.members.length}</div><div class="summary-sub">本月新增 ${store.members.length}</div></div>
+<div class="summary-card"><div class="summary-label">储值总余额</div><div class="summary-value">¥${store.members.reduce((s,m)=>s+m.balance,0)}</div><div class="summary-sub">活跃卡 ${store.members.filter(m=>m.cards.length).length} 张</div></div>
+<div class="summary-card"><div class="summary-label">次卡剩余</div><div class="summary-value">${store.members.reduce((s,m)=>s+m.cards.reduce((a,c)=>a+(c.total-c.used),0),0)} 次</div><div class="summary-sub">含美甲 / 美睫</div></div></div>
+<div class="card"><div class="card-title">会员折扣体系</div><div class="scroll-x"><table class="table"><thead><tr><th>会员等级</th><th>折扣</th><th>说明</th></tr></thead><tbody>${Object.entries(MEMBER_LEVELS).map(([k,v])=>`<tr><td>${k}</td><td><span class="tag tag-rose">${v.label}</span></td><td class="text-sm text-sub">消费享 ${v.discount===1?'原价':(v.discount*10)+'折'} 优惠</td></tr>`).join('')}</tbody></table></div></div>
+<div class="card"><div class="card-title">会员列表</div><div class="member-list" id="memberList">${store.members.map(m=>renderMemberItem(m)).join('')}</div></div>
+<div class="card"><div class="card-title">消费历史台账<span class="card-title-sub">按日期倒序 · 筛选</span></div>
+<div class="filter-bar">
+<div class="form-group"><label class="form-label">开始日期</label><input class="form-input filter-date" type="date" id="flowDateStart" onchange="filterFlows()" /></div>
+<div class="form-group"><label class="form-label">结束日期</label><input class="form-input filter-date" type="date" id="flowDateEnd" onchange="filterFlows()" /></div>
+<div class="form-group"><label class="form-label">关键词</label><input class="form-input filter-keyword" placeholder="项目/顾客名" id="flowKeyword" oninput="filterFlows()" /></div>
+<div class="form-group"><label class="form-label">消费类型</label><select class="form-select filter-type" id="flowType" onchange="filterFlows()"><option value="">全部</option><option value="充值">充值</option><option value="扣次">扣次消费</option></select></div>
+<button class="btn btn-sm btn-ghost" onclick="resetFlowFilter()">重置筛选</button>
+</div>
+<div class="scroll-x"><table class="table"><thead><tr><th>消费日期</th><th>顾客</th><th>服务项目</th><th>原价</th><th>折扣</th><th>实付</th><th>类型</th></tr></thead><tbody id="flowTbody">${flows.map(f=>renderFlowRow(f)).join('')}</tbody></table></div></div>`
+}
+function renderMemberItem(m){
+const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
+return`<div class="member-item" data-name="${m.name}" data-phone="${m.phone}">
+<div class="member-head"><div class="member-info"><div class="avatar">${m.name[0]}</div><div><div class="member-name">${m.name} <span class="discount-badge">${m.level} · ${level.label}</span></div><div class="member-phone">${m.phone}</div></div></div>
+<div class="row" style="gap:8px"><div class="member-balance">余额 ¥${m.balance}</div><button class="btn btn-sm btn-dark" onclick="deductCard(${m.id})">扣卡结算</button><button class="btn btn-sm btn-red" onclick="deleteMember(${m.id})">删除</button></div></div>
+<div class="member-cards">${m.cards.length?m.cards.map((c,i)=>`<div class="card-chip"><div class="card-chip-name">${c.name}</div><div class="card-chip-info">${c.total-c.used} / ${c.total} 次</div><button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:11px;margin-left:6px" onclick="deleteMemberCard(${m.id},${i})">删除</button></div>`).join(''):'<div class="text-sm text-sub">暂无卡项 · <a onclick="addMemberCard(${m.id})" style="color:var(--tag-rose);cursor:pointer">点击添加</a></div>'}<button class="btn btn-sm btn-ghost" style="margin-left:8px;padding:2px 10px;font-size:11px" onclick="addMemberCard(${m.id})">+ 添加卡项</button></div></div>`
+}
+function renderFlowRow(f){
+return`<tr data-date="${f.date}" data-customer="${f.customer}" data-type="${f.type}" data-content="${f.content}">
+<td>${f.date}</td><td>${f.customer}</td><td>${f.content}</td>
+<td class="${f.type==='充值'?'':'strike'}">¥${f.originalPrice}</td>
+<td><span class="tag tag-rose">${f.discount}</span></td>
+<td style="font-weight:600;color:var(--tag-rose)">¥${f.paid}</td>
+<td><span class="tag ${f.type==='充值'?'tag-done':'tag-pending'}">${f.type}</span></td></tr>`
+}
+function filterFlows(){
+const start=document.getElementById('flowDateStart')?.value||'';
+const end=document.getElementById('flowDateEnd')?.value||'';
+const keyword=(document.getElementById('flowKeyword')?.value||'').toLowerCase();
+const type=document.getElementById('flowType')?.value||'';
+document.querySelectorAll('#flowTbody tr').forEach(tr=>{
+let match=true;
+if(start&&tr.dataset.date<start)match=false;
+if(end&&tr.dataset.date.slice(0,10)>end)match=false;
+if(keyword&&!tr.dataset.customer.toLowerCase().includes(keyword)&&!tr.dataset.content.toLowerCase().includes(keyword))match=false;
+if(type&&tr.dataset.type!==type)match=false;
+tr.style.display=match?'':'none'
+})
+}
+function resetFlowFilter(){
+const els=['flowDateStart','flowDateEnd','flowKeyword','flowType'];
+els.forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+filterFlows()
+}
+function filterMembers(){const q=document.getElementById('searchMember').value.toLowerCase();document.querySelectorAll('#memberList .member-item').forEach(item=>{item.style.display=(item.dataset.name.toLowerCase().includes(q)||item.dataset.phone.includes(q))?'':'none'})}
+function deleteMember(id){
+const m=store.members.find(x=>x.id===id);if(!m)return;
+if(!confirm(`确认删除会员「${m.name}」？\n该会员的全部消费记录也将同步删除。`))return;
+store.members=store.members.filter(x=>x.id!==id);
+store.memberFlow=store.memberFlow.filter(f=>f.customer!==m.name);
+// 同步清理顾客档案的会员标记
+const cust=store.customers.find(c=>c.name===m.name);
+if(cust)cust.member='普通会员';
+saveData();navigateTo('member');alert('已删除会员及关联消费记录')
+}
+function deleteMemberCard(memberId,cardIdx){
+const m=store.members.find(x=>x.id===memberId);if(!m)return;
+const c=m.cards[cardIdx];if(!c)return;
+if(!confirm(`确认删除卡项「${c.name}」？\n剩余 ${c.total-c.used} 次将作废。`))return;
+m.cards.splice(cardIdx,1);
+saveData();navigateTo('member');alert('已删除卡项「'+c.name+'」')
+}
+function addMemberCard(memberId){
+const m=store.members.find(x=>x.id===memberId);if(!m)return;
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">卡项名称</label><input class="form-input" id="newCardName" placeholder="如：美甲次卡" value="美甲次卡" /></div>
+<div class="form-group"><label class="form-label">总次数</label><input class="form-input" type="number" min="1" id="newCardTotal" value="10" /></div>
+<div class="form-group"><label class="form-label">已用次数</label><input class="form-input" type="number" min="0" id="newCardUsed" value="0" /></div>
+</div>`;
+openModalContent('添加卡项 - '+m.name,html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmAddCard(${memberId})">添加</button>`)
+}
+function confirmAddCard(memberId){
+const m=store.members.find(x=>x.id===memberId);if(!m)return;
+const name=document.getElementById('newCardName').value.trim()||'新卡项';
+const total=parseInt(document.getElementById('newCardTotal').value)||1;
+const used=parseInt(document.getElementById('newCardUsed').value)||0;
+if(used>total){alert('已用次数不能超过总次数');return}
+m.cards.push({name,total,used});
+saveData();closeModal();navigateTo('member');alert('已添加卡项「'+name+'」')
+}
+function deductCard(id){
+const m=store.members.find(x=>x.id===id);
+const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
+_deductMemberId=id;
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="text-sm">顾客：<b>${m.name}</b> · ${m.level}（${level.label}） · 余额 ¥${m.balance}</div>
+<div class="form-group"><label class="form-label">选择卡项</label><select class="form-select" id="deductCardSelect" onchange="updateDeductPreview()">${m.cards.map((c,i)=>`<option value="${i}">${c.name} (剩余 ${c.total-c.used}/${c.total})</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">扣减次数</label><input class="form-input" type="number" min="1" value="1" id="deductCount" oninput="updateDeductPreview()" /></div>
+<div class="form-group"><label class="form-label">服务项目</label><input class="form-input" id="deductService" placeholder="如：法式美甲" value="法式美甲" /></div>
+<div class="form-group"><label class="form-label">原价（元）</label><input class="form-input" type="number" id="deductPrice" value="280" oninput="updateDeductPreview()" /></div>
+<div class="discount-info" id="deductPreview"></div></div>`;
+openModalContent('会员扣卡结算',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmDeduct(${id})">确认扣卡</button>`);
+setTimeout(updateDeductPreview,50)
+}
+function updateDeductPreview(){
+const m=store.members.find(x=>x.id===_deductMemberId);if(!m)return;
+const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
+const price=parseFloat(document.getElementById('deductPrice').value)||0;
+const count=parseInt(document.getElementById('deductCount').value)||1;
+const original=price*count,paid=Math.round(original*level.discount),save=original-paid;
+document.getElementById('deductPreview').innerHTML=`<div class="discount-row"><span>原价</span><span>¥${original}</span></div><div class="discount-row"><span>会员折扣</span><span class="val">${level.label}</span></div><div class="discount-row"><span>优惠金额</span><span class="val">-¥${save}</span></div><div class="discount-row total"><span>折后实付</span><span class="val">¥${paid}</span></div>`
+}
+let _deductMemberId=null;
+function confirmDeduct(id){
+const m=store.members.find(x=>x.id===id);
+const cardIdx=parseInt(document.getElementById('deductCardSelect').value);
+const count=parseInt(document.getElementById('deductCount').value)||1;
+const service=document.getElementById('deductService').value||'服务';
+const price=parseFloat(document.getElementById('deductPrice').value)||0;
+const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
+const card=m.cards[cardIdx];if(!card){alert('请选择卡项');return}
+if(card.used+count>card.total){alert('剩余次数不足');return}
+card.used+=count;
+const original=price*count,paid=Math.round(original*level.discount);
+const now=new Date();
+const dateStr2=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+store.memberFlow.unshift({date:dateStr2,customer:m.name,type:'扣次',content:`${card.name} ×${count} · ${service}`,originalPrice:original,discount:level.label,paid,balance:`剩余 ${card.total-card.used} 次`});
+saveData();closeModal();navigateTo('member');alert(`扣卡成功\n原价 ¥${original} · ${level.label} · 实付 ¥${paid}`)
+}
+
+/* ========== 营销数据模块 ========== */
+function renderLive(){
+const plans=store.livePlans||[];
+return`<div class="section-toolbar"><div style="flex:1"></div><button class="btn btn-dark" onclick="openLiveTopicModal()"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新建选题</button></div>
+<div class="card"><div class="card-title">热门选题</div><div class="ranking-list">${store.liveTopics.map((t,i)=>`<div class="ranking-item"><div class="rank-num ${i===0?'top':''}">${i+1}</div><div class="rank-content"><div class="row" style="gap:8px"><span class="rank-name">${t.title}</span><span class="tag tag-pending">${t.tag}</span></div><div class="rank-bar-wrap"><div class="rank-bar" style="width:${(t.heat/10000)*100}%"></div></div></div><div class="rank-value">🔥 ${t.heat}</div><button class="btn btn-sm btn-ghost" onclick="deleteLiveTopic(${i})">删除</button></div>`).join('')}</div></div>
+<div class="card"><div class="card-title">直播计划${plans.length?'<span class="card-title-sub">'+plans.length+' 场</span>':''}</div>${plans.length?`<div class="scroll-x"><table class="table"><thead><tr><th>选题</th><th>分类</th><th>计划日期</th><th>状态</th><th>操作</th></tr></thead><tbody>${plans.map((p,i)=>`<tr><td>${p.title}</td><td><span class="tag">${p.category}</span></td><td>${p.date}</td><td><span class="tag ${p.status==='已直播'?'tag-done':'tag-pending'}">${p.status}</span></td><td><button class="btn btn-sm btn-ghost" onclick="toggleLivePlanStatus(${i})">${p.status==='已直播'?'取消':'完成'}</button> <button class="btn btn-sm btn-red" onclick="deleteLivePlan(${i})">删除</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">暂无直播计划，点击「新建选题」开始策划</div>'}</div>`
+}
+function openLiveTopicModal(){
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">选题名称 *</label><input class="form-input" id="live_title" placeholder="如：夏日显白美甲TOP10" /></div>
+<div class="form-group"><label class="form-label">分类</label><select class="form-select" id="live_category"><option>美甲</option><option>美睫</option><option>套餐</option><option>其他</option></select></div>
+<div class="form-group"><label class="form-label">标签</label><select class="form-select" id="live_tag"><option>热门</option><option>推荐</option><option>爆款</option><option>新品</option><option>经典</option></select></div>
+<div class="form-group"><label class="form-label">计划直播日期</label><input class="form-input" type="date" id="live_date" value="${today.toISOString().slice(0,10)}" /></div>
+<div class="form-group"><label class="form-label">热度值（可选）</label><input class="form-input" type="number" id="live_heat" placeholder="如：5000" value="5000" /></div>
+</div>`;
+openModalContent('新建直播选题',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmAddLiveTopic()">创建</button>`)
+}
+function confirmAddLiveTopic(){
+const title=document.getElementById('live_title').value.trim();
+if(!title){alert('请填写选题名称');return}
+const category=document.getElementById('live_category').value;
+const tag=document.getElementById('live_tag').value;
+const date=document.getElementById('live_date').value;
+const heat=parseInt(document.getElementById('live_heat').value)||0;
+store.liveTopics.unshift({title,tag,heat});
+if(!store.livePlans)store.livePlans=[];
+store.livePlans.push({title,category,date,status:'待直播'});
+saveData();closeModal();navigateTo('live');alert('已创建选题「'+title+'」')
+}
+function deleteLiveTopic(idx){
+const t=store.liveTopics[idx];if(!t)return;
+if(!confirm(`确认删除选题「${t.title}」？`))return;
+store.liveTopics.splice(idx,1);
+saveData();navigateTo('live')
+}
+function deleteLivePlan(idx){
+if(!store.livePlans)return;
+if(!confirm('确认删除这个直播计划？'))return;
+store.livePlans.splice(idx,1);
+saveData();navigateTo('live')
+}
+function toggleLivePlanStatus(idx){
+if(!store.livePlans)return;
+const p=store.livePlans[idx];if(!p)return;
+p.status=p.status==='已直播'?'待直播':'已直播';
+saveData();navigateTo('live')
+}
+function renderProduct(){
+return`<div class="section-toolbar"><div style="flex:1"></div><button class="btn btn-dark" onclick="openProductModal()"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新增产品</button></div>
+<div class="card"><div class="card-title">产品销量统计</div><div class="scroll-x"><table class="table"><thead><tr><th>产品名称</th><th>分类</th><th>销量</th><th>库存</th><th>状态</th><th>操作</th></tr></thead><tbody>${store.products.map((p,i)=>`<tr><td>${p.name}</td><td><span class="tag">${p.category}</span></td><td>${p.sales}</td><td>${p.stock}</td><td>${p.stock<15?'<span class="tag tag-pending">需补货</span>':'<span class="tag tag-done">充足</span>'}</td><td><button class="btn btn-sm btn-ghost" onclick="editProduct(${i})">编辑</button> <button class="btn btn-sm btn-red" onclick="deleteProduct(${i})">删除</button></td></tr>`).join('')}</tbody></table></div></div>`
+}
+function openProductModal(){
+const cats=[...new Set(store.products.map(p=>p.category)),'甲油','睫毛','工具','耗材','其他'];
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">产品名称 *</label><input class="form-input" id="prod_name" placeholder="如：OPI经典红" /></div>
+<div class="form-group"><label class="form-label">分类</label><input class="form-input" id="prod_category" placeholder="如：甲油 / 睫毛 / 工具" value="甲油" /></div>
+<div class="form-group"><label class="form-label">销量</label><input class="form-input" type="number" min="0" id="prod_sales" value="0" /></div>
+<div class="form-group"><label class="form-label">库存</label><input class="form-input" type="number" min="0" id="prod_stock" value="0" /></div>
+</div>`;
+openModalContent('新增产品',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmAddProduct()">添加</button>`)
+}
+function confirmAddProduct(){
+const name=document.getElementById('prod_name').value.trim();
+if(!name){alert('请填写产品名称');return}
+const category=document.getElementById('prod_category').value.trim()||'其他';
+const sales=parseInt(document.getElementById('prod_sales').value)||0;
+const stock=parseInt(document.getElementById('prod_stock').value)||0;
+store.products.push({name,category,sales,stock});
+saveData();closeModal();navigateTo('product');alert('已添加产品「'+name+'」')
+}
+function editProduct(idx){
+const p=store.products[idx];if(!p)return;
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">产品名称 *</label><input class="form-input" id="edit_prod_name" value="${p.name}" /></div>
+<div class="form-group"><label class="form-label">分类</label><input class="form-input" id="edit_prod_category" value="${p.category}" /></div>
+<div class="form-group"><label class="form-label">销量</label><input class="form-input" type="number" min="0" id="edit_prod_sales" value="${p.sales}" /></div>
+<div class="form-group"><label class="form-label">库存</label><input class="form-input" type="number" min="0" id="edit_prod_stock" value="${p.stock}" /></div>
+</div>`;
+openModalContent('编辑产品 - '+p.name,html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmEditProduct(${idx})">保存</button>`)
+}
+function confirmEditProduct(idx){
+const p=store.products[idx];if(!p)return;
+const name=document.getElementById('edit_prod_name').value.trim();
+if(!name){alert('请填写产品名称');return}
+p.name=name;
+p.category=document.getElementById('edit_prod_category').value.trim()||'其他';
+p.sales=parseInt(document.getElementById('edit_prod_sales').value)||0;
+p.stock=parseInt(document.getElementById('edit_prod_stock').value)||0;
+saveData();closeModal();navigateTo('product');alert('已更新产品「'+name+'」')
+}
+function deleteProduct(idx){
+const p=store.products[idx];if(!p)return;
+if(!confirm(`确认删除产品「${p.name}」？`))return;
+store.products.splice(idx,1);
+saveData();navigateTo('product');alert('已删除产品')
+}
+function renderAnalytics(){
+const fin=store.finance||[];
+const summary=calcFinanceSummary();
+const days=['周一','周二','周三','周四','周五','周六','周日'];
+const values=[1860,2340,1980,2680,3120,4280,3560];const max=Math.max(...values);
+return`
+<div class="data-cards">
+<div class="data-card dc-rose"><div class="data-card-label">总收入</div><div class="data-card-value">¥${summary.income}</div><div class="data-card-sub">本月累计</div></div>
+<div class="data-card dc-yellow"><div class="data-card-label">总支出</div><div class="data-card-value">¥${summary.expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
+<div class="data-card dc-green"><div class="data-card-label">净营收</div><div class="data-card-value" style="color:${summary.net>=0?'var(--tag-green)':'var(--accent-red)'}">¥${summary.net}</div><div class="data-card-sub">收入 − 支出</div></div>
+<div class="data-card dc-blue"><div class="data-card-label">收支笔数</div><div class="data-card-value">${fin.length}</div><div class="data-card-sub">收入 ${fin.filter(f=>f.type==='income').length} · 支出 ${fin.filter(f=>f.type==='expense').length}</div></div>
+</div>
+
+<div class="card"><div class="card-title">收支明细记录<button class="btn btn-dark btn-sm" onclick="openFinanceModal()"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新增记录</button></div>
+<div class="section-toolbar" style="margin-bottom:12px">
+<input class="search-input" placeholder="搜索备注 / 顾客" style="max-width:200px" oninput="filterFinance(this.value)" />
+<select class="form-select" style="max-width:140px" onchange="filterFinanceType(this.value)"><option value="">全部类型</option><option value="income">收入</option><option value="expense">支出</option></select>
+</div>
+<div class="scroll-x"><table class="table" id="financeTable">
+<thead><tr><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>顾客/对象</th><th>关联店员</th><th>备注</th><th>操作</th></tr></thead>
+<tbody id="financeTbody">${fin.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(f=>`
+<tr data-type="${f.type}" data-search="${f.note||''} ${f.customer||''} ${f.staff||''}">
+<td>${f.date}</td>
+<td><span class="tag ${f.type==='income'?'tag-done':'tag-pending'}" style="${f.type==='income'?'background:#d8ebde;color:#5a8a6e':'background:#fce4e4;color:#c0392b'}">${f.type==='income'?'收入':'支出'}</span></td>
+<td>${f.category||'-'}</td>
+<td style="font-weight:600;color:${f.type==='income'?'var(--tag-green)':'var(--accent-red)'}">${f.type==='income'?'+':'-'}¥${f.amount}</td>
+<td>${f.customer||'-'}</td>
+<td>${f.staff||'-'}</td>
+<td class="text-sm text-sub">${f.note||''}</td>
+<td><button class="btn btn-sm btn-ghost" onclick="deleteFinance(${f.id})">删除</button></td>
+</tr>`).join('')}</tbody>
+</table></div></div>
+
+<div class="chart-container"><div class="row-between" style="margin-bottom:8px"><div style="font-size:14px;font-weight:600">本周营收趋势</div><div class="text-sm text-sub">单位：元</div></div><div class="chart-bars">${values.map((v,i)=>`<div class="chart-bar"><div class="chart-bar-value">${v}</div><div class="chart-bar-fill" style="height:${(v/max)*85}%"></div><div class="chart-bar-label">${days[i]}</div></div>`).join('')}</div></div>
+<div class="card"><div class="card-title">美甲师业绩</div><div class="scroll-x"><table class="table"><thead><tr><th>排名</th><th>姓名</th><th>服务单数</th><th>业绩</th><th>客户满意度</th></tr></thead><tbody><tr><td><span class="rank-num top">1</span></td><td>佳佳</td><td>28 单</td><td>¥14,260</td><td>⭐ 4.9</td></tr><tr><td><span class="rank-num">2</span></td><td>思琪</td><td>22 单</td><td>¥10,840</td><td>⭐ 4.8</td></tr><tr><td><span class="rank-num">3</span></td><td>小米</td><td>16 单</td><td>¥6,420</td><td>⭐ 4.7</td></tr></tbody></table></div></div>`
+}
+
+function openFinanceModal(){
+const todayDate=today.toISOString().slice(0,10);
+const html=`
+<div style="display:flex;flex-direction:column;gap:14px">
+<div class="form-group"><label class="form-label">收支类型 *</label><select class="form-select" id="fin_type" onchange="toggleFinanceType()"><option value="income">收入</option><option value="expense">支出</option></select></div>
+<div class="form-group"><label class="form-label">分类</label><select class="form-select" id="fin_category"><option>美甲服务</option><option>美睫服务</option><option>套餐</option><option>产品售卖</option></select></div>
+<div class="form-group" id="finStaffGroup" style="display:none"><label class="form-label">关联店员</label><select class="form-select" id="fin_staff">${store.staff.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">金额（元）*</label><input class="form-input" type="number" id="fin_amount" placeholder="0" min="0" /></div>
+<div class="form-group"><label class="form-label">日期 *</label><input class="form-input" type="date" id="fin_date" value="${todayDate}" /></div>
+<div class="form-group"><label class="form-label">顾客 / 对象</label><input class="form-input" id="fin_customer" placeholder="顾客姓名或支出对象" /></div>
+<div class="form-group full"><label class="form-label">备注</label><textarea class="form-textarea" id="fin_note" placeholder="说明"></textarea></div>
+</div>`;
+const footer=`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="saveFinance()">保存记录</button>`;
+openModalContent('新增收支记录',html,footer)
+}
+
+function toggleFinanceType(){
+const type=document.getElementById('fin_type')?.value;
+const cat=document.getElementById('fin_category');
+const staffG=document.getElementById('finStaffGroup');
+if(type==='expense'){
+if(cat)cat.innerHTML='<option>员工日结</option><option>耗材采购</option><option>房租水电</option><option>其他支出</option>';
+if(staffG)staffG.style.display='flex'
+}else{
+if(cat)cat.innerHTML='<option>美甲服务</option><option>美睫服务</option><option>套餐</option><option>产品售卖</option><option>其他收入</option>';
+if(staffG)staffG.style.display='none'
+}
+}
+
+function saveFinance(){
+const type=document.getElementById('fin_type').value;
+const amount=parseFloat(document.getElementById('fin_amount').value)||0;
+const date=document.getElementById('fin_date').value;
+if(!amount||!date){alert('请填写金额和日期');return}
+const record={
+id:store.nextId.finance++,
+date,
+type,
+category:document.getElementById('fin_category').value,
+amount,
+customer:document.getElementById('fin_customer').value.trim()||'',
+staff:type==='expense'?(document.getElementById('fin_staff')?.value||''):'',
+note:document.getElementById('fin_note').value.trim()||''
+};
+if(!store.finance)store.finance=[];
+store.finance.push(record);
+saveData();closeModal();navigateTo('analytics');alert('记录已保存')
+}
+
+function deleteFinance(id){
+if(!confirm('确认删除该条收支记录？\n此操作不影响会员消费台账。'))return;
+store.finance=store.finance.filter(f=>f.id!==id);
+saveData();navigateTo('analytics')
+}
+
+function filterFinance(q){
+q=q.toLowerCase();
+document.querySelectorAll('#financeTbody tr').forEach(tr=>{
+tr.style.display=tr.dataset.search.toLowerCase().includes(q)?'':'none'
+})
+}
+function filterFinanceType(type){
+document.querySelectorAll('#financeTbody tr').forEach(tr=>{
+tr.style.display=(!type||tr.dataset.type===type)?'':'none'
+})
+}
+
+/* ========== 模态框 ========== */
+function openModal(type){
+let title='',html='',footer='';
+if(type==='appointment'){
+title='新建预约';
+html=`<div class="form-grid"><div class="form-group"><label class="form-label">顾客姓名</label><input class="form-input" id="m_apt_name" /></div><div class="form-group"><label class="form-label">联系电话</label><input class="form-input" id="m_apt_phone" /></div><div class="form-group full"><label class="form-label">服务项目</label><input class="form-input" id="m_apt_service" /></div><div class="form-group"><label class="form-label">技师</label><select class="form-select" id="m_apt_staff">${store.staff.map(s=>`<option>${s.name}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">日期</label><input class="form-input" type="date" id="m_apt_date" value="${today.toISOString().slice(0,10)}" /></div><div class="form-group"><label class="form-label">开始时间</label><input class="form-input" type="time" id="m_apt_start" value="10:00" /></div><div class="form-group"><label class="form-label">结束时间</label><input class="form-input" type="time" id="m_apt_end" value="12:00" /></div></div>`;
+footer=`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="saveModalApt()">保存</button>`
+}else if(type==='customer'){
+title='新增会员';
+html=`<div class="form-grid"><div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="m_cust_name" /></div><div class="form-group"><label class="form-label">电话</label><input class="form-input" id="m_cust_phone" /></div><div class="form-group"><label class="form-label">会员等级</label><select class="form-select" id="m_cust_member">${Object.keys(MEMBER_LEVELS).map(l=>`<option>${l}</option>`).join('')}</select></div><div class="form-group full"><label class="form-label">偏好</label><input class="form-input" id="m_cust_pref" /></div></div>`;
+footer=`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="saveModalCust()">保存</button>`
+}else if(type==='staff'){
+title='添加员工';
+html=`<div class="form-grid"><div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="m_staff_name" /></div><div class="form-group"><label class="form-label">岗位</label><select class="form-select" id="m_staff_role"><option>美甲师</option><option>美睫师</option><option>前台</option></select></div><div class="form-group full"><label class="form-label">联系电话</label><input class="form-input" id="m_staff_phone" /></div></div>`;
+footer=`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="saveModalStaff()">保存</button>`
+}
+openModalContent(title,html,footer)
+}
+function saveModalApt(){
+const name=document.getElementById('m_apt_name').value.trim(),phone=document.getElementById('m_apt_phone').value.trim();
+if(!name||!phone){alert('请填写姓名和电话');return}
+store.appointments.push({id:store.nextId.appointment++,customer:name,phone,service:document.getElementById('m_apt_service').value||'服务',staff:document.getElementById('m_apt_staff').value,date:document.getElementById('m_apt_date').value,startTime:document.getElementById('m_apt_start').value,endTime:document.getElementById('m_apt_end').value,status:'pending',price:0});
+saveData();closeModal();alert('预约已创建')
+}
+function saveModalCust(){
+const name=document.getElementById('m_cust_name').value.trim(),phone=document.getElementById('m_cust_phone').value.trim();
+if(!name||!phone){alert('请填写姓名和电话');return}
+const member=document.getElementById('m_cust_member').value;
+store.customers.push({id:store.nextId.customer++,name,phone,skin:'自然肤色',preference:document.getElementById('m_cust_pref').value||'-',history:'-',consumption:0,visits:0,member});
+store.members.push({id:store.nextId.member++,name,phone,level:member,balance:0,cards:[]});
+saveData();closeModal();alert('顾客已添加')
+}
+function saveModalStaff(){
+const name=document.getElementById('m_staff_name').value.trim();if(!name){alert('请填写姓名');return}
+store.staff.push({id:store.nextId.staff++,name,role:document.getElementById('m_staff_role').value,phone:document.getElementById('m_staff_phone').value.trim()});
+saveData();closeModal();alert('员工已添加');if(document.querySelector('.menu-item.active')?.dataset.page==='staff')navigateTo('staff')
+}
+function openModalContent(title,html,footer='',showFooter=true){
+document.getElementById('modalTitle').textContent=title;
+document.getElementById('modalBody').innerHTML=html;
+document.getElementById('modalFooter').innerHTML=footer;
+document.getElementById('modalFooter').style.display=showFooter?'flex':'none';
+document.getElementById('modalOverlay').classList.add('show')
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+/* ========== 初始化 ========== */
+loadData();
+initCloudSync();
+updateLoginBtn();
+updateSyncStatus();
+navigateTo('home');
+
+// 监听新建预约页面时间输入，更新时长提示
+document.addEventListener('input',function(e){
+if(e.target.id==='apt_start'||e.target.id==='apt_end'){
+const s=document.getElementById('apt_start'),e2=document.getElementById('apt_end');
+if(s&&e2&&s.value&&e2.value){
+const hint=document.getElementById('aptDurationHint');
+if(hint)hint.textContent='服务时长：'+calcDuration(s.value,e2.value)
+}
+}
+});
+</script>
+</body>
+</html>
