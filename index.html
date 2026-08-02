@@ -1130,7 +1130,7 @@ function renderMemberItem(m){
 const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
 return`<div class="member-item" data-name="${m.name}" data-phone="${m.phone}">
 <div class="member-head"><div class="member-info"><div class="avatar">${m.name[0]}</div><div><div class="member-name">${m.name} <span class="discount-badge">${m.level} · ${level.label}</span></div><div class="member-phone">${m.phone}</div></div></div>
-<div class="row" style="gap:8px"><div class="member-balance">余额 ¥${m.balance}</div><button class="btn btn-sm btn-dark" onclick="deductCard(${m.id})">扣卡结算</button><button class="btn btn-sm btn-red" onclick="deleteMember(${m.id})">删除</button></div></div>
+<div class="row" style="gap:8px"><div class="member-balance">余额 ¥${m.balance}</div><button class="btn btn-sm btn-dark" style="background:var(--tag-green)" onclick="rechargeMember(${m.id})">储值</button><button class="btn btn-sm btn-dark" onclick="deductCard(${m.id})">扣卡结算</button><button class="btn btn-sm btn-red" onclick="deleteMember(${m.id})">删除</button></div></div>
 <div class="member-cards">${m.cards.length?m.cards.map((c,i)=>`<div class="card-chip"><div class="card-chip-name">${c.name}</div><div class="card-chip-info">${c.total-c.used} / ${c.total} 次</div><button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:11px;margin-left:6px" onclick="deleteMemberCard(${m.id},${i})">删除</button></div>`).join(''):'<div class="text-sm text-sub">暂无卡项 · <a onclick="addMemberCard(${m.id})" style="color:var(--tag-rose);cursor:pointer">点击添加</a></div>'}<button class="btn btn-sm btn-ghost" style="margin-left:8px;padding:2px 10px;font-size:11px" onclick="addMemberCard(${m.id})">+ 添加卡项</button></div></div>`
 }
 function renderFlowRow(f){
@@ -1200,40 +1200,148 @@ function deductCard(id){
 const m=store.members.find(x=>x.id===id);
 const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
 _deductMemberId=id;
+const payMethods=m.balance>0?`<option value="card">次卡扣次</option><option value="balance">储值余额支付</option><option value="cash">现金/扫码</option>`:`<option value="card">次卡扣次</option><option value="cash">现金/扫码</option>`;
 const html=`<div style="display:flex;flex-direction:column;gap:14px">
-<div class="text-sm">顾客：<b>${m.name}</b> · ${m.level}（${level.label}） · 余额 ¥${m.balance}</div>
-<div class="form-group"><label class="form-label">选择卡项</label><select class="form-select" id="deductCardSelect" onchange="updateDeductPreview()">${m.cards.map((c,i)=>`<option value="${i}">${c.name} (剩余 ${c.total-c.used}/${c.total})</option>`).join('')}</select></div>
-<div class="form-group"><label class="form-label">扣减次数</label><input class="form-input" type="number" min="1" value="1" id="deductCount" oninput="updateDeductPreview()" /></div>
+<div class="text-sm">顾客：<b>${m.name}</b> · ${m.level}（${level.label}） · 储值余额 ¥${m.balance}</div>
+<div class="form-group"><label class="form-label">结算方式</label><select class="form-select" id="deductMethod" onchange="updateDeductPreview()">${payMethods}</select></div>
+<div class="form-group" id="cardSelectGroup"><label class="form-label">选择卡项</label><select class="form-select" id="deductCardSelect" onchange="updateDeductPreview()">${m.cards.map((c,i)=>`<option value="${i}">${c.name} (剩余 ${c.total-c.used}/${c.total})</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">扣减次数 / 服务数量</label><input class="form-input" type="number" min="1" value="1" id="deductCount" oninput="updateDeductPreview()" /></div>
 <div class="form-group"><label class="form-label">服务项目</label><input class="form-input" id="deductService" placeholder="如：法式美甲" value="法式美甲" /></div>
 <div class="form-group"><label class="form-label">原价（元）</label><input class="form-input" type="number" id="deductPrice" value="280" oninput="updateDeductPreview()" /></div>
 <div class="discount-info" id="deductPreview"></div></div>`;
-openModalContent('会员扣卡结算',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmDeduct(${id})">确认扣卡</button>`);
+openModalContent('会员扣卡结算',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmDeduct(${id})">确认结算</button>`);
 setTimeout(updateDeductPreview,50)
 }
 function updateDeductPreview(){
 const m=store.members.find(x=>x.id===_deductMemberId);if(!m)return;
 const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
+const method=document.getElementById('deductMethod')?.value||'card';
 const price=parseFloat(document.getElementById('deductPrice').value)||0;
 const count=parseInt(document.getElementById('deductCount').value)||1;
-const original=price*count,paid=Math.round(original*level.discount),save=original-paid;
-document.getElementById('deductPreview').innerHTML=`<div class="discount-row"><span>原价</span><span>¥${original}</span></div><div class="discount-row"><span>会员折扣</span><span class="val">${level.label}</span></div><div class="discount-row"><span>优惠金额</span><span class="val">-¥${save}</span></div><div class="discount-row total"><span>折后实付</span><span class="val">¥${paid}</span></div>`
+const original=price*count;
+const cardSelectGroup=document.getElementById('cardSelectGroup');
+if(cardSelectGroup)cardSelectGroup.style.display=method==='card'?'':'none';
+let previewHtml='';
+if(method==='card'){
+const cardIdx=parseInt(document.getElementById('deductCardSelect')?.value||0);
+const card=m.cards[cardIdx];
+const remaining=card?card.total-card.used:0;
+const enough=card&&remaining>=count;
+previewHtml=`<div class="discount-row"><span>原价</span><span>¥${original}</span></div><div class="discount-row"><span>会员折扣</span><span class="val">${level.label}</span></div><div class="discount-row"><span>优惠金额</span><span class="val">-¥${original-Math.round(original*level.discount)}</span></div><div class="discount-row total"><span>折后实付</span><span class="val">¥${Math.round(original*level.discount)}</span></div><div class="discount-row"><span>次卡剩余</span><span class="val" style="color:${enough?'var(--tag-green)':'var(--accent-red)'}">${remaining} 次 ${enough?'':'(不足！)'}</span></div>`;
+}else if(method==='balance'){
+const paid=Math.round(original*level.discount);
+const balanceAfter=m.balance-paid;
+previewHtml=`<div class="discount-row"><span>原价</span><span>¥${original}</span></div><div class="discount-row"><span>会员折扣</span><span class="val">${level.label}</span></div><div class="discount-row"><span>折后扣减</span><span class="val">-¥${paid}</span></div><div class="discount-row total"><span>储值余额变化</span><span class="val">¥${m.balance} → ¥${balanceAfter}</span></div><div class="discount-row"><span style="color:${balanceAfter>=0?'var(--tag-green)':'var(--accent-red)'}">${balanceAfter>=0?'余额充足':'余额不足！需补 ¥'+(-balanceAfter)}</span></div>`;
+}else{
+previewHtml=`<div class="discount-row"><span>原价</span><span>¥${original}</span></div><div class="discount-row"><span>会员折扣</span><span class="val">${level.label}</span></div><div class="discount-row"><span>优惠金额</span><span class="val">-¥${original-Math.round(original*level.discount)}</span></div><div class="discount-row total"><span>应收金额</span><span class="val">¥${Math.round(original*level.discount)}</span></div>`;
+}
+document.getElementById('deductPreview').innerHTML=previewHtml
 }
 let _deductMemberId=null;
 function confirmDeduct(id){
 const m=store.members.find(x=>x.id===id);
-const cardIdx=parseInt(document.getElementById('deductCardSelect').value);
+const method=document.getElementById('deductMethod').value;
 const count=parseInt(document.getElementById('deductCount').value)||1;
 const service=document.getElementById('deductService').value||'服务';
 const price=parseFloat(document.getElementById('deductPrice').value)||0;
 const level=MEMBER_LEVELS[m.level]||MEMBER_LEVELS['普通会员'];
-const card=m.cards[cardIdx];if(!card){alert('请选择卡项');return}
-if(card.used+count>card.total){alert('剩余次数不足');return}
-card.used+=count;
 const original=price*count,paid=Math.round(original*level.discount);
 const now=new Date();
 const dateStr2=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+if(method==='card'){
+const cardIdx=parseInt(document.getElementById('deductCardSelect').value);
+const card=m.cards[cardIdx];if(!card){alert('请选择卡项');return}
+if(card.used+count>card.total){alert('剩余次数不足');return}
+card.used+=count;
 store.memberFlow.unshift({date:dateStr2,customer:m.name,type:'扣次',content:`${card.name} ×${count} · ${service}`,originalPrice:original,discount:level.label,paid,balance:`剩余 ${card.total-card.used} 次`});
-saveData();closeModal();navigateTo('member');alert(`扣卡成功\n原价 ¥${original} · ${level.label} · 实付 ¥${paid}`)
+saveData();closeModal();navigateTo('member');alert(`扣卡成功\n${card.name} ×${count}\n原价 ¥${original} · ${level.label} · 实付 ¥${paid}`)
+}else if(method==='balance'){
+if(m.balance<paid){alert('储值余额不足\n当前余额 ¥'+m.balance+' · 需要 ¥'+paid);return}
+m.balance-=paid;
+store.memberFlow.unshift({date:dateStr2,customer:m.name,type:'扣次',content:`储值支付 · ${service} ×${count}`,originalPrice:original,discount:level.label,paid,balance:`余额 ¥${m.balance}`});
+saveData();closeModal();navigateTo('member');alert(`储值扣减成功\n${service} ×${count}\n原价 ¥${original} · ${level.label} · 实付 ¥${paid}\n余额：¥${m.balance}`)
+}else{
+store.memberFlow.unshift({date:dateStr2,customer:m.name,type:'扣次',content:`现金/扫码 · ${service} ×${count}`,originalPrice:original,discount:level.label,paid,balance:`现金收讫`});
+saveData();closeModal();navigateTo('member');alert(`结算成功\n${service} ×${count}\n原价 ¥${original} · ${level.label} · 实付 ¥${paid}`)
+}
+}
+
+/* ===== 会员储值 ===== */
+const RECHARGE_PRESETS=[
+{amount:500,gift:'',label:'储值 ¥500'},
+{amount:1000,gift:'赠 ¥50',giftAmount:50,label:'储值 ¥1000 送50'},
+{amount:2000,gift:'赠 ¥200',giftAmount:200,label:'储值 ¥2000 送200'},
+{amount:3000,gift:'赠 ¥500',giftAmount:500,label:'储值 ¥3000 送500'},
+{amount:5000,gift:'赠 ¥1000',giftAmount:1000,label:'储值 ¥5000 送1000'}
+];
+function rechargeMember(id){
+const m=store.members.find(x=>x.id===id);if(!m)return;
+_rechargeMemberId=id;
+const html=`<div style="display:flex;flex-direction:column;gap:14px">
+<div class="text-sm">顾客：<b>${m.name}</b> · ${m.level} · 当前余额 ¥${m.balance}</div>
+<div class="form-group"><label class="form-label">储值方案（点选）</label>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+${RECHARGE_PRESETS.map((p,i)=>`<div onclick="selectRechargePreset(${i})" id="preset_${i}" style="padding:12px;border:2px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s"><div style="font-weight:600;font-size:15px">¥${p.amount}</div><div style="font-size:11px;color:var(--tag-rose);margin-top:2px">${p.gift||'无赠送'}</div></div>`).join('')}
+<div onclick="selectRechargePreset(-1)" id="preset_custom" style="padding:12px;border:2px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s"><div style="font-weight:600;font-size:15px">自定义</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px">手动输入</div></div>
+</div></div>
+<div class="form-group" id="customAmountGroup" style="display:none"><label class="form-label">自定义储值金额（元）</label><input class="form-input" type="number" min="0" id="rechargeAmount" value="" oninput="updateRechargePreview()" placeholder="输入金额" /></div>
+<div class="form-group"><label class="form-label">赠送金额（元）</label><input class="form-input" type="number" min="0" id="rechargeGift" value="0" oninput="updateRechargePreview()" placeholder="0" /></div>
+<div class="form-group"><label class="form-label">赠送项目（自定义）</label><input class="form-input" id="rechargeGiftItem" placeholder="如：送美甲1次 / 送护理1次" value="" /></div>
+<div class="form-group"><label class="form-label">备注</label><input class="form-input" id="rechargeNote" placeholder="可选备注" value="" /></div>
+<div class="discount-info" id="rechargePreview"></div></div>`;
+openModalContent('会员储值 - '+m.name,html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmRecharge(${id})">确认储值</button>`);
+setTimeout(updateRechargePreview,50)
+}
+let _rechargeMemberId=null;let _selectedPreset=null;
+function selectRechargePreset(i){
+_selectedPreset=i;
+for(let j=0;j<RECHARGE_PRESETS.length;j++){const el=document.getElementById('preset_'+j);if(el)el.style.borderColor='var(--line)'}
+const customEl=document.getElementById('preset_custom');if(customEl)customEl.style.borderColor='var(--line)';
+const target=i===-1?'preset_custom':'preset_'+i;
+const el=document.getElementById(target);if(el)el.style.borderColor='var(--tag-rose)';
+const customGroup=document.getElementById('customAmountGroup');
+if(i===-1){
+if(customGroup)customGroup.style.display='';
+const amt=document.getElementById('rechargeAmount');if(amt)amt.value='';
+const gift=document.getElementById('rechargeGift');if(gift)gift.value='0';
+}else{
+if(customGroup)customGroup.style.display='none';
+const p=RECHARGE_PRESETS[i];
+const amt=document.getElementById('rechargeAmount');if(amt)amt.value=p.amount;
+const gift=document.getElementById('rechargeGift');if(gift)gift.value=p.giftAmount||0;
+}
+updateRechargePreview()
+}
+function updateRechargePreview(){
+const m=store.members.find(x=>x.id===_rechargeMemberId);if(!m)return;
+const amount=parseFloat(document.getElementById('rechargeAmount')?.value)||0;
+const gift=parseFloat(document.getElementById('rechargeGift')?.value)||0;
+const giftItem=document.getElementById('rechargeGiftItem')?.value||'';
+const total=amount+gift;
+document.getElementById('rechargePreview').innerHTML=`<div class="discount-row"><span>储值金额</span><span>¥${amount}</span></div><div class="discount-row"><span>赠送金额</span><span class="val" style="color:var(--tag-rose)">+¥${gift}</span></div>${giftItem?`<div class="discount-row"><span>赠送项目</span><span class="val">${giftItem}</span></div>`:''}<div class="discount-row total"><span>实际入账</span><span class="val">¥${total}</span></div><div class="discount-row"><span>储值后余额</span><span class="val">¥${m.balance} → ¥${m.balance+total}</span></div>`
+}
+function confirmRecharge(id){
+const m=store.members.find(x=>x.id===id);if(!m)return;
+const amount=parseFloat(document.getElementById('rechargeAmount').value)||0;
+const gift=parseFloat(document.getElementById('rechargeGift').value)||0;
+const giftItem=document.getElementById('rechargeGiftItem').value.trim();
+const note=document.getElementById('rechargeNote').value.trim();
+if(amount<=0){alert('请填写储值金额');return}
+const total=amount+gift;
+const beforeBalance=m.balance;
+m.balance+=total;
+// 如果有赠送项目，自动添加为卡项
+if(giftItem){
+m.cards.push({name:giftItem,total:1,used:0});
+}
+const now=new Date();
+const dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+let content=`储值 ¥${amount}`;
+if(gift>0)content+=` + 赠送 ¥${gift}`;
+if(giftItem)content+=` + 赠送「${giftItem}」`;
+if(note)content+=` · ${note}`;
+store.memberFlow.unshift({date:dateStr,customer:m.name,type:'充值',content,originalPrice:amount,discount:gift>0?'赠送':'-',paid:total,balance:`余额 ¥${m.balance}`});
+saveData();closeModal();navigateTo('member');alert(`储值成功\n${content}\n余额：¥${beforeBalance} → ¥${m.balance}`)
 }
 
 /* ========== 营销数据模块 ========== */
