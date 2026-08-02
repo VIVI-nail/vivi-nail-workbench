@@ -790,6 +790,11 @@ function toggleFab(){document.getElementById('fabMenu').classList.toggle('show')
 document.addEventListener('click',(e)=>{if(!e.target.closest('.fab')&&!e.target.closest('.fab-menu'))document.getElementById('fabMenu').classList.remove('show')})
 
 function renderPage(page){
+const result=renderPageContent(page);
+setTimeout(()=>{if(page==='home')updateHomeTabs()},10);
+return result
+}
+function renderPageContent(page){
 const header=(title)=>`
 <div class="page-header">
 <div class="page-title-wrap">
@@ -829,24 +834,73 @@ return`
 <div class="quick-card" onclick="navigateTo('member')"><div class="quick-card-icon qc-green"><svg class="icon icon-lg"><use href="#i-card"/></svg></div><div class="quick-card-content"><div class="quick-card-title">会员扣卡</div><div class="quick-card-desc">消费扣减 / 折扣结算</div></div></div>
 <div class="quick-card" onclick="navigateTo('analytics')"><div class="quick-card-icon qc-blue"><svg class="icon icon-lg"><use href="#i-chart"/></svg></div><div class="quick-card-content"><div class="quick-card-title">数据分析</div><div class="quick-card-desc">营收 / 客源 / 业绩</div></div></div>
 </div>
-<div class="tab-bar"><button class="tab-btn active">今日数据</button><button class="tab-btn" onclick="switchTab(this)">本月数据</button><button class="tab-btn" onclick="switchTab(this)">本年数据</button></div>
-<div class="data-cards">
-<div class="data-card dc-rose"><div class="data-card-label">总收入</div><div class="data-card-value">¥${calcFinanceSummary().income}</div><div class="data-card-sub">本月累计</div></div>
-<div class="data-card dc-yellow"><div class="data-card-label">总支出</div><div class="data-card-value">¥${calcFinanceSummary().expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
-<div class="data-card dc-green"><div class="data-card-label">净营收</div><div class="data-card-value">¥${calcFinanceSummary().net}</div><div class="data-card-sub">收入 − 支出</div></div>
-<div class="data-card dc-blue"><div class="data-card-label">预约数</div><div class="data-card-value">${store.appointments.length}</div><div class="data-card-sub">待到店 ${store.appointments.filter(a=>a.status==='pending').length}</div></div>
-</div>
-<div class="card"><div class="card-title">今日工作分析<span class="card-title-sub">${today.getMonth()+1}月${today.getDate()}日 · 周${'日一二三四五六'[today.getDay()]}</span></div>
-<div class="analysis-grid">
-<div class="analysis-item"><div class="analysis-label">今日到店</div><div class="analysis-value">${store.appointments.length}</div><div class="analysis-sub">已完成 0 · 待到店 ${store.appointments.filter(a=>a.status==='pending').length}</div></div>
-<div class="analysis-item"><div class="analysis-label">完成率</div><div class="analysis-value">0%</div><div class="analysis-sub">0 / ${store.appointments.length} 单</div></div>
-<div class="analysis-item"><div class="analysis-label">客单价</div><div class="analysis-value">¥0</div><div class="analysis-sub">净营收 ¥${calcFinanceSummary().net}</div></div>
-<div class="analysis-item"><div class="analysis-label">最热时段</div><div class="analysis-value">14:00</div><div class="analysis-sub">下午高峰</div></div>
-<div class="analysis-item"><div class="analysis-label">热门项目</div><div class="analysis-value">法式美甲</div><div class="analysis-sub">预订 2 次</div></div>
-<div class="analysis-item"><div class="analysis-label">待到店</div><div class="analysis-value">${store.appointments.filter(a=>a.status==='pending').length}</div><div class="analysis-sub">待处理</div></div>
-</div></div>`
+<div class="tab-bar"><button class="tab-btn active" onclick="switchTab(this)">今日数据</button><button class="tab-btn" onclick="switchTab(this)">本月数据</button><button class="tab-btn" onclick="switchTab(this)">本年数据</button></div>
+<div class="data-cards" id="homeDataCards"></div>
+<div class="card"><div class="card-title" id="homeAnalysisTitle"></div>
+<div class="analysis-grid" id="homeAnalysisGrid"></div></div>`
 }
-function switchTab(el){el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+function switchTab(el){
+el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');
+updateHomeTabs()
+}
+function updateHomeTabs(){
+const active=document.querySelector('.tab-btn.active');
+const tab=active?active.textContent:'今日数据';
+const todayStr=today.toISOString().slice(0,10);
+const thisMonth=todayStr.slice(0,7);
+const thisYear=todayStr.slice(0,4);
+const fin=store.finance||[];
+let income,expense,net,label,subLabel,titlePrefix;
+if(tab==='今日数据'){
+const todayFin=fin.filter(f=>f.date===todayStr);
+income=todayFin.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+expense=todayFin.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+label='今日';subLabel=todayStr;titlePrefix='今日';
+}else if(tab==='本月数据'){
+const monthFin=fin.filter(f=>f.date.startsWith(thisMonth));
+income=monthFin.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+expense=monthFin.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+label='本月';subLabel=thisMonth;titlePrefix='本月';
+}else{
+const yearFin=fin.filter(f=>f.date.startsWith(thisYear));
+income=yearFin.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+expense=yearFin.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+label='本年';subLabel=thisYear;titlePrefix='本年';
+}
+net=income-expense;
+// 筛选今日/本月/本年的预约
+let filteredApts;
+if(tab==='今日数据')filteredApts=store.appointments.filter(a=>a.date===todayStr);
+else if(tab==='本月数据')filteredApts=store.appointments.filter(a=>a.date.startsWith(thisMonth));
+else filteredApts=store.appointments.filter(a=>a.date.startsWith(thisYear));
+const doneApts=filteredApts.filter(a=>a.status==='done');
+const pendingApts=filteredApts.filter(a=>a.status==='pending');
+const doneIncome=doneApts.reduce((s,a)=>s+(a.price||0),0);
+const avgPrice=doneApts.length?Math.round(doneIncome/doneApts.length):0;
+const completeRate=filteredApts.length?Math.round(doneApts.length/filteredApts.length*100):0;
+// 最热项目
+const serviceCount={};
+filteredApts.forEach(a=>{const svc=a.service||'';serviceCount[svc]=(serviceCount[svc]||0)+1});
+const topService=Object.entries(serviceCount).sort((a,b)=>b[1]-a[1])[0];
+const cardsHtml=`<div class="data-card dc-rose"><div class="data-card-label">${label}收入</div><div class="data-card-value">¥${income}</div><div class="data-card-sub">${subLabel}</div></div>
+<div class="data-card dc-yellow"><div class="data-card-label">${label}支出</div><div class="data-card-value">¥${expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
+<div class="data-card dc-green"><div class="data-card-label">${label}净营收</div><div class="data-card-value" style="color:${net>=0?'var(--tag-green)':'var(--accent-red)'}">¥${net}</div><div class="data-card-sub">收入 − 支出</div></div>
+<div class="data-card dc-blue"><div class="data-card-label">${label}预约</div><div class="data-card-value">${filteredApts.length}</div><div class="data-card-sub">已完成 ${doneApts.length} · 待处理 ${pendingApts.length}</div></div>`;
+const analysisHtml=`<div class="analysis-item"><div class="analysis-label">${titlePrefix}到店</div><div class="analysis-value">${filteredApts.length}</div><div class="analysis-sub">已完成 ${doneApts.length} · 待到店 ${pendingApts.length}</div></div>
+<div class="analysis-item"><div class="analysis-label">完成率</div><div class="analysis-value">${completeRate}%</div><div class="analysis-sub">${doneApts.length} / ${filteredApts.length} 单</div></div>
+<div class="analysis-item"><div class="analysis-label">客单价</div><div class="analysis-value">¥${avgPrice}</div><div class="analysis-sub">总营收 ¥${doneIncome}</div></div>
+<div class="analysis-item"><div class="analysis-label">收支笔数</div><div class="analysis-value">${fin.filter(f=>{if(tab==='今日数据')return f.date===todayStr;if(tab==='本月数据')return f.date.startsWith(thisMonth);return f.date.startsWith(thisYear)}).length}</div><div class="analysis-sub">收入 + 支出记录</div></div>
+<div class="analysis-item"><div class="analysis-label">热门项目</div><div class="analysis-value">${topService?topService[0]:'-'}</div><div class="analysis-sub">${topService?'预订 '+topService[1]+' 次':'暂无数据'}</div></div>
+<div class="analysis-item"><div class="analysis-label">待到店</div><div class="analysis-value">${pendingApts.length}</div><div class="analysis-sub">待处理预约</div></div>`;
+const cardsEl=document.getElementById('homeDataCards');
+const titleEl=document.getElementById('homeAnalysisTitle');
+const gridEl=document.getElementById('homeAnalysisGrid');
+if(cardsEl)cardsEl.innerHTML=cardsHtml;
+if(titleEl)titleEl.innerHTML=`${titlePrefix}工作分析<span class="card-title-sub">${today.getMonth()+1}月${today.getDate()}日 · 周${'日一二三四五六'[today.getDay()]}</span>`;
+if(gridEl)gridEl.innerHTML=analysisHtml
+}
+function switchTab(el){el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');updateHomeTabs()}
 
 function calcFinanceSummary(){
 const fin=store.finance||[];
@@ -1495,15 +1549,23 @@ saveData();navigateTo('product');alert('已删除产品')
 function renderAnalytics(){
 const fin=store.finance||[];
 const summary=calcFinanceSummary();
-const days=['周一','周二','周三','周四','周五','周六','周日'];
-const values=[1860,2340,1980,2680,3120,4280,3560];const max=Math.max(...values);
+const todayStr=today.toISOString().slice(0,10);
+const thisMonth=todayStr.slice(0,7);
+// 本周收入趋势（动态计算最近7天）
+const weekLabels=[];const weekValues=[];
+for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const ds=d.toISOString().slice(0,10);const dayLabel=(d.getMonth()+1)+'/'+d.getDate();weekLabels.push(dayLabel);weekValues.push(fin.filter(f=>f.date===ds&&f.type==='income').reduce((s,f)=>s+f.amount,0))}
+const maxW=Math.max(...weekValues,1);
 return`
-<div class="data-cards">
-<div class="data-card dc-rose"><div class="data-card-label">总收入</div><div class="data-card-value">¥${summary.income}</div><div class="data-card-sub">本月累计</div></div>
-<div class="data-card dc-yellow"><div class="data-card-label">总支出</div><div class="data-card-value">¥${summary.expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
-<div class="data-card dc-green"><div class="data-card-label">净营收</div><div class="data-card-value" style="color:${summary.net>=0?'var(--tag-green)':'var(--accent-red)'}">¥${summary.net}</div><div class="data-card-sub">收入 − 支出</div></div>
+<div class="tab-bar"><button class="tab-btn active" onclick="switchAnalyticsTab(this)">今日数据</button><button class="tab-btn" onclick="switchAnalyticsTab(this)">本月数据</button><button class="tab-btn" onclick="switchAnalyticsTab(this)">本年数据</button></div>
+<div class="data-cards" id="analyticsCards">
+<div class="data-card dc-rose"><div class="data-card-label">今日收入</div><div class="data-card-value">¥${fin.filter(f=>f.date===todayStr&&f.type==='income').reduce((s,f)=>s+f.amount,0)}</div><div class="data-card-sub">${todayStr}</div></div>
+<div class="data-card dc-yellow"><div class="data-card-label">今日支出</div><div class="data-card-value">¥${fin.filter(f=>f.date===todayStr&&f.type==='expense').reduce((s,f)=>s+f.amount,0)}</div><div class="data-card-sub">含工资 / 耗材</div></div>
+<div class="data-card dc-green"><div class="data-card-label">总净营收</div><div class="data-card-value" style="color:${summary.net>=0?'var(--tag-green)':'var(--accent-red)'}">¥${summary.net}</div><div class="data-card-sub">全部收入 - 支出</div></div>
 <div class="data-card dc-blue"><div class="data-card-label">收支笔数</div><div class="data-card-value">${fin.length}</div><div class="data-card-sub">收入 ${fin.filter(f=>f.type==='income').length} · 支出 ${fin.filter(f=>f.type==='expense').length}</div></div>
 </div>
+
+<div class="card"><div class="card-title">本周营收趋势<span class="card-title-sub">最近7天</span></div>
+<div class="chart-container"><div class="chart-bars">${weekValues.map((v,i)=>`<div class="chart-bar"><div class="chart-bar-value">${v}</div><div class="chart-bar-fill" style="height:${(v/maxW)*85}%"></div><div class="chart-bar-label">${weekLabels[i]}</div></div>`).join('')}</div></div></div>
 
 <div class="card"><div class="card-title">收支明细记录<button class="btn btn-dark btn-sm" onclick="openFinanceModal()"><svg class="icon icon-sm"><use href="#i-plus"/></svg> 新增记录</button></div>
 <div class="section-toolbar" style="margin-bottom:12px">
@@ -1525,8 +1587,28 @@ return`
 </tr>`).join('')}</tbody>
 </table></div></div>
 
-<div class="chart-container"><div class="row-between" style="margin-bottom:8px"><div style="font-size:14px;font-weight:600">本周营收趋势</div><div class="text-sm text-sub">单位：元</div></div><div class="chart-bars">${values.map((v,i)=>`<div class="chart-bar"><div class="chart-bar-value">${v}</div><div class="chart-bar-fill" style="height:${(v/max)*85}%"></div><div class="chart-bar-label">${days[i]}</div></div>`).join('')}</div></div>
 <div class="card"><div class="card-title">美甲师业绩</div><div class="scroll-x"><table class="table"><thead><tr><th>排名</th><th>姓名</th><th>服务单数</th><th>业绩</th><th>客户满意度</th></tr></thead><tbody><tr><td><span class="rank-num top">1</span></td><td>佳佳</td><td>28 单</td><td>¥14,260</td><td>⭐ 4.9</td></tr><tr><td><span class="rank-num">2</span></td><td>思琪</td><td>22 单</td><td>¥10,840</td><td>⭐ 4.8</td></tr><tr><td><span class="rank-num">3</span></td><td>小米</td><td>16 单</td><td>¥6,420</td><td>⭐ 4.7</td></tr></tbody></table></div></div>`
+}
+function switchAnalyticsTab(el){
+el.parentNode.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');
+const tab=el.textContent;
+const todayStr=today.toISOString().slice(0,10);
+const thisMonth=todayStr.slice(0,7);
+const thisYear=todayStr.slice(0,4);
+const fin=store.finance||[];
+let income,expense,label,sub;
+if(tab==='今日数据'){const tf=fin.filter(f=>f.date===todayStr);income=tf.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);expense=tf.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);label='今日';sub=todayStr}
+else if(tab==='本月数据'){const mf=fin.filter(f=>f.date.startsWith(thisMonth));income=mf.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);expense=mf.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);label='本月';sub=thisMonth}
+else{const yf=fin.filter(f=>f.date.startsWith(thisYear));income=yf.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);expense=yf.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);label='本年';sub=thisYear}
+const net=income-expense;
+const filtered=tab==='今日数据'?fin.filter(f=>f.date===todayStr):tab==='本月数据'?fin.filter(f=>f.date.startsWith(thisMonth)):fin.filter(f=>f.date.startsWith(thisYear));
+const cardsEl=document.getElementById('analyticsCards');
+if(cardsEl)cardsEl.innerHTML=`
+<div class="data-card dc-rose"><div class="data-card-label">${label}收入</div><div class="data-card-value">¥${income}</div><div class="data-card-sub">${sub}</div></div>
+<div class="data-card dc-yellow"><div class="data-card-label">${label}支出</div><div class="data-card-value">¥${expense}</div><div class="data-card-sub">含工资 / 耗材</div></div>
+<div class="data-card dc-green"><div class="data-card-label">${label}净营收</div><div class="data-card-value" style="color:${net>=0?'var(--tag-green)':'var(--accent-red)'}">¥${net}</div><div class="data-card-sub">收入 - 支出</div></div>
+<div class="data-card dc-blue"><div class="data-card-label">${label}笔数</div><div class="data-card-value">${filtered.length}</div><div class="data-card-sub">收入 ${filtered.filter(f=>f.type==='income').length} · 支出 ${filtered.filter(f=>f.type==='expense').length}</div></div>`;
 }
 
 function openFinanceModal(){
