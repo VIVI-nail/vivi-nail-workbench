@@ -1267,21 +1267,28 @@ saveData();closeModal();navigateTo('member');alert(`结算成功\n${service} ×$
 }
 
 /* ===== 会员储值 ===== */
-const RECHARGE_PRESETS=[
-{amount:500,gift:'',label:'储值 ¥500'},
-{amount:1000,gift:'赠 ¥50',giftAmount:50,label:'储值 ¥1000 送50'},
-{amount:2000,gift:'赠 ¥200',giftAmount:200,label:'储值 ¥2000 送200'},
-{amount:3000,gift:'赠 ¥500',giftAmount:500,label:'储值 ¥3000 送500'},
-{amount:5000,gift:'赠 ¥1000',giftAmount:1000,label:'储值 ¥5000 送1000'}
+const RECHARGE_PRESETS_KEY='vivi_recharge_presets';
+const DEFAULT_RECHARGE_PRESETS=[
+{amount:500,giftAmount:0,giftItem:''},
+{amount:1000,giftAmount:50,giftItem:''},
+{amount:2000,giftAmount:200,giftItem:''},
+{amount:3000,giftAmount:500,giftItem:''},
+{amount:5000,giftAmount:1000,giftItem:''}
 ];
+function getRechargePresets(){
+try{return JSON.parse(localStorage.getItem(RECHARGE_PRESETS_KEY))||DEFAULT_RECHARGE_PRESETS}catch(e){return DEFAULT_RECHARGE_PRESETS}
+}
+function saveRechargePresets(arr){try{localStorage.setItem(RECHARGE_PRESETS_KEY,JSON.stringify(arr))}catch(e){}}
+let _rechargePresets=getRechargePresets();
 function rechargeMember(id){
 const m=store.members.find(x=>x.id===id);if(!m)return;
 _rechargeMemberId=id;
+const presets=_rechargePresets;
 const html=`<div style="display:flex;flex-direction:column;gap:14px">
 <div class="text-sm">顾客：<b>${m.name}</b> · ${m.level} · 当前余额 ¥${m.balance}</div>
-<div class="form-group"><label class="form-label">储值方案（点选）</label>
+<div class="form-group"><label class="form-label" style="display:flex;justify-content:space-between;align-items:center">储值方案（点选）<button class="btn btn-sm btn-ghost" style="padding:2px 8px;font-size:11px" onclick="openRechargePresetEditor()">编辑方案</button></label>
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-${RECHARGE_PRESETS.map((p,i)=>`<div onclick="selectRechargePreset(${i})" id="preset_${i}" style="padding:12px;border:2px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s"><div style="font-weight:600;font-size:15px">¥${p.amount}</div><div style="font-size:11px;color:var(--tag-rose);margin-top:2px">${p.gift||'无赠送'}</div></div>`).join('')}
+${presets.map((p,i)=>{const giftText=p.giftAmount>0?'赠 ¥'+p.giftAmount:'无赠送';const itemText=p.giftItem?' · '+p.giftItem:''';return `<div onclick="selectRechargePreset(${i})" id="preset_${i}" style="padding:12px;border:2px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s"><div style="font-weight:600;font-size:15px">¥${p.amount}</div><div style="font-size:11px;color:var(--tag-rose);margin-top:2px">${giftText}${itemText}</div></div>`}).join('')}
 <div onclick="selectRechargePreset(-1)" id="preset_custom" style="padding:12px;border:2px solid var(--line);border-radius:10px;cursor:pointer;text-align:center;transition:all .2s"><div style="font-weight:600;font-size:15px">自定义</div><div style="font-size:11px;color:var(--text-sub);margin-top:2px">手动输入</div></div>
 </div></div>
 <div class="form-group" id="customAmountGroup" style="display:none"><label class="form-label">自定义储值金额（元）</label><input class="form-input" type="number" min="0" id="rechargeAmount" value="" oninput="updateRechargePreview()" placeholder="输入金额" /></div>
@@ -1292,10 +1299,53 @@ ${RECHARGE_PRESETS.map((p,i)=>`<div onclick="selectRechargePreset(${i})" id="pre
 openModalContent('会员储值 - '+m.name,html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="confirmRecharge(${id})">确认储值</button>`);
 setTimeout(updateRechargePreview,50)
 }
+function openRechargePresetEditor(){
+const presets=_rechargePresets;
+const html=`<div style="display:flex;flex-direction:column;gap:10px">
+<div class="text-sm text-sub" style="line-height:1.6">编辑储值方案，修改后自动保存。点击「添加方案」可新增。</div>
+<div id="presetEditorList">${presets.map((p,i)=>`<div class="preset-edit-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;padding:8px;background:#faf7f1;border-radius:8px">
+<input type="number" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.amount}" placeholder="金额" oninput="updatePresetField(${i},'amount',this.value)" />
+<input type="number" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.giftAmount}" placeholder="赠送金额" oninput="updatePresetField(${i},'giftAmount',this.value)" />
+<input type="text" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.giftItem||''}" placeholder="赠送项目（可选）" oninput="updatePresetField(${i},'giftItem',this.value)" />
+<button class="btn btn-sm btn-red" style="padding:4px 8px;font-size:11px" onclick="deletePreset(${i})">删除</button>
+</div>`).join('')}</div>
+<button class="btn btn-sm btn-ghost" style="justify-content:center;margin-top:4px" onclick="addPreset()">+ 添加方案</button>
+</div>`;
+openModalContent('编辑储值方案',html,`<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-dark" onclick="savePresetEditor()">保存</button>`);
+}
+function updatePresetField(idx,field,val){
+_rechargePresets[idx][field]=field==='giftItem'?val:parseFloat(val)||0;
+}
+function addPreset(){
+_rechargePresets.push({amount:1000,giftAmount:0,giftItem:''});
+refreshPresetEditor()
+}
+function deletePreset(idx){
+if(_rechargePresets.length<=1){alert('至少保留一个方案');return}
+_rechargePresets.splice(idx,1);
+refreshPresetEditor()
+}
+function refreshPresetEditor(){
+const list=document.getElementById('presetEditorList');
+if(!list)return;
+list.innerHTML=_rechargePresets.map((p,i)=>`<div class="preset-edit-row" data-idx="${i}" style="display:flex;gap:6px;align-items:center;padding:8px;background:#faf7f1;border-radius:8px">
+<input type="number" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.amount}" placeholder="金额" oninput="updatePresetField(${i},'amount',this.value)" />
+<input type="number" style="width:80px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.giftAmount}" placeholder="赠送金额" oninput="updatePresetField(${i},'giftAmount',this.value)" />
+<input type="text" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px" value="${p.giftItem||''}" placeholder="赠送项目（可选）" oninput="updatePresetField(${i},'giftItem',this.value)" />
+<button class="btn btn-sm btn-red" style="padding:4px 8px;font-size:11px" onclick="deletePreset(${i})">删除</button>
+</div>`).join('')
+}
+function savePresetEditor(){
+saveRechargePresets(_rechargePresets);
+closeModal();
+// 刷新储值弹窗
+if(_rechargeMemberId){rechargeMember(_rechargeMemberId)}
+alert('储值方案已保存')
+}
 let _rechargeMemberId=null;let _selectedPreset=null;
 function selectRechargePreset(i){
 _selectedPreset=i;
-for(let j=0;j<RECHARGE_PRESETS.length;j++){const el=document.getElementById('preset_'+j);if(el)el.style.borderColor='var(--line)'}
+for(let j=0;j<_rechargePresets.length;j++){const el=document.getElementById('preset_'+j);if(el)el.style.borderColor='var(--line)'}
 const customEl=document.getElementById('preset_custom');if(customEl)customEl.style.borderColor='var(--line)';
 const target=i===-1?'preset_custom':'preset_'+i;
 const el=document.getElementById(target);if(el)el.style.borderColor='var(--tag-rose)';
@@ -1304,11 +1354,13 @@ if(i===-1){
 if(customGroup)customGroup.style.display='';
 const amt=document.getElementById('rechargeAmount');if(amt)amt.value='';
 const gift=document.getElementById('rechargeGift');if(gift)gift.value='0';
+const giftItem=document.getElementById('rechargeGiftItem');if(giftItem)giftItem.value='';
 }else{
 if(customGroup)customGroup.style.display='none';
-const p=RECHARGE_PRESETS[i];
+const p=_rechargePresets[i];
 const amt=document.getElementById('rechargeAmount');if(amt)amt.value=p.amount;
 const gift=document.getElementById('rechargeGift');if(gift)gift.value=p.giftAmount||0;
+const giftItem=document.getElementById('rechargeGiftItem');if(giftItem)giftItem.value=p.giftItem||'';
 }
 updateRechargePreview()
 }
